@@ -41,6 +41,14 @@ type ApprovalItem = {
       }
     }>
   }
+  agentConversation: Array<{
+    id: string
+    agentId: string
+    recipientId: string | null
+    messageType: string
+    content: string
+    createdAt: string
+  }>
   artifacts: Array<{
     id: string
     artifactType: 'JSON' | 'PDF'
@@ -57,6 +65,17 @@ type ApprovalsResponse = {
 export const Route = createFileRoute('/synergy/approvals')({
   component: SynergyApprovalsPage,
 })
+
+function toAgentLabel(agentId: string): string {
+  if (agentId === 'synergy_router' || agentId === 'synergy_deterministic_router') {
+    return 'Synergy Agent'
+  }
+
+  return agentId
+    .replace(/_agent$/, '')
+    .replaceAll('_', ' ')
+    .toUpperCase()
+}
 
 function SynergyApprovalsPage() {
   const { data: session, isPending } = authClient.useSession()
@@ -196,6 +215,7 @@ function SynergyApprovalsPage() {
                 <th className="pb-2 pr-3">BU</th>
                 <th className="pb-2 pr-3">Recommendation</th>
                 <th className="pb-2 pr-3">SKU Proposals</th>
+                <th className="pb-2 pr-3">Agent Conversation</th>
                 <th className="pb-2 pr-3">Artifacts</th>
                 <th className="pb-2">Action</th>
               </tr>
@@ -240,6 +260,34 @@ function SynergyApprovalsPage() {
                       </ul>
                     ) : (
                       <span className="text-xs text-slate-400">No SKU proposals</span>
+                    )}
+                  </td>
+                  <td className="py-2 pr-3 max-w-[360px]">
+                    {assignment.agentConversation.length > 0 ? (
+                      <details className="rounded border border-slate-700 bg-slate-900/70 p-2">
+                        <summary className="cursor-pointer text-xs text-cyan-300">
+                          View {assignment.agentConversation.length} messages
+                        </summary>
+                        <div className="mt-2 space-y-2">
+                          {assignment.agentConversation.map((message) => (
+                            <article
+                              key={message.id}
+                              className="rounded border border-slate-700 bg-slate-800 px-2 py-1"
+                            >
+                              <p className="text-[11px] text-cyan-200">
+                                {toAgentLabel(message.agentId)}
+                                {message.recipientId ? ` -> ${toAgentLabel(message.recipientId)}` : ''}
+                              </p>
+                              <p className="text-[11px] text-slate-300">
+                                {new Date(message.createdAt).toLocaleString()} | {message.messageType}
+                              </p>
+                              <p className="text-xs text-slate-100 mt-1">{message.content}</p>
+                            </article>
+                          ))}
+                        </div>
+                      </details>
+                    ) : (
+                      <span className="text-xs text-slate-400">No conversation logs</span>
                     )}
                   </td>
                   <td className="py-2 pr-3">
@@ -287,7 +335,7 @@ function SynergyApprovalsPage() {
               ))}
               {assignments.length === 0 ? (
                 <tr>
-                  <td className="py-4 text-slate-400" colSpan={7}>
+                  <td className="py-4 text-slate-400" colSpan={8}>
                     No assignments found for the selected filter.
                   </td>
                 </tr>

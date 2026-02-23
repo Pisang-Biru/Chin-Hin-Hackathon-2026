@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { prisma } from '@/db'
+import { buildAssignmentConversation } from '@/lib/assignments/agent-conversation'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { jsonResponse } from '@/lib/server/json-response'
 
@@ -63,6 +64,22 @@ export const Route = createFileRoute('/api/synergy/approvals')({
                 finalScore: true,
                 confidence: true,
                 reasonSummary: true,
+                routingRun: {
+                  select: {
+                    agentLogs: {
+                      orderBy: { createdAt: 'asc' },
+                      select: {
+                        id: true,
+                        agentId: true,
+                        recipientId: true,
+                        messageType: true,
+                        content: true,
+                        evidenceRefs: true,
+                        createdAt: true,
+                      },
+                    },
+                  },
+                },
                 recommendationSkus: {
                   orderBy: { rank: 'asc' },
                   select: {
@@ -123,6 +140,10 @@ export const Route = createFileRoute('/api/synergy/approvals')({
                 buSku: item.buSku,
               })),
             },
+            agentConversation: buildAssignmentConversation(
+              assignment.businessUnit.code,
+              assignment.routingRecommendation.routingRun.agentLogs,
+            ),
             artifacts: assignment.artifacts.map((artifact) => ({
               id: artifact.id,
               artifactType: artifact.artifactType,

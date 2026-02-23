@@ -22,6 +22,14 @@ type AssignmentItem = {
     locationText: string | null
     currentStatus?: string | null
   }
+  agentConversation: Array<{
+    id: string
+    agentId: string
+    recipientId: string | null
+    messageType: string
+    content: string
+    createdAt: string
+  }>
   artifacts: Array<{
     id: string
     artifactType: 'JSON' | 'PDF'
@@ -40,6 +48,17 @@ type AssignmentsResponse = {
 export const Route = createFileRoute('/bu/assignments')({
   component: BuAssignmentsPage,
 })
+
+function toAgentLabel(agentId: string): string {
+  if (agentId === 'synergy_router' || agentId === 'synergy_deterministic_router') {
+    return 'Synergy Agent'
+  }
+
+  return agentId
+    .replace(/_agent$/, '')
+    .replaceAll('_', ' ')
+    .toUpperCase()
+}
 
 function BuAssignmentsPage() {
   const { data: session, isPending } = authClient.useSession()
@@ -175,6 +194,7 @@ function BuAssignmentsPage() {
                 <th className="pb-2 pr-3">Role</th>
                 <th className="pb-2 pr-3">Status</th>
                 <th className="pb-2 pr-3">Approved</th>
+                <th className="pb-2 pr-3">Agent Conversation</th>
                 <th className="pb-2 pr-3">Artifacts</th>
                 <th className="pb-2">Action</th>
               </tr>
@@ -196,6 +216,34 @@ function BuAssignmentsPage() {
                   <td className="py-2 pr-3">{assignment.assignedRole}</td>
                   <td className="py-2 pr-3">{assignment.status}</td>
                   <td className="py-2 pr-3">{new Date(assignment.approvedAt).toLocaleString()}</td>
+                  <td className="py-2 pr-3 max-w-[340px]">
+                    {assignment.agentConversation.length > 0 ? (
+                      <details className="rounded border border-slate-700 bg-slate-900/70 p-2">
+                        <summary className="cursor-pointer text-xs text-cyan-300">
+                          View {assignment.agentConversation.length} messages
+                        </summary>
+                        <div className="mt-2 space-y-2">
+                          {assignment.agentConversation.map((message) => (
+                            <article
+                              key={message.id}
+                              className="rounded border border-slate-700 bg-slate-800 px-2 py-1"
+                            >
+                              <p className="text-[11px] text-cyan-200">
+                                {toAgentLabel(message.agentId)}
+                                {message.recipientId ? ` -> ${toAgentLabel(message.recipientId)}` : ''}
+                              </p>
+                              <p className="text-[11px] text-slate-300">
+                                {new Date(message.createdAt).toLocaleString()} | {message.messageType}
+                              </p>
+                              <p className="text-xs text-slate-100 mt-1">{message.content}</p>
+                            </article>
+                          ))}
+                        </div>
+                      </details>
+                    ) : (
+                      <span className="text-xs text-slate-400">No conversation logs</span>
+                    )}
+                  </td>
                   <td className="py-2 pr-3">
                     {assignment.artifacts.length > 0 ? (
                       <div className="flex flex-col gap-1">
@@ -237,7 +285,7 @@ function BuAssignmentsPage() {
               ))}
               {assignments.length === 0 ? (
                 <tr>
-                  <td className="py-4 text-slate-400" colSpan={8}>
+                  <td className="py-4 text-slate-400" colSpan={9}>
                     No assignments found.
                   </td>
                 </tr>
