@@ -17,6 +17,14 @@ type StatusResponse = {
   progress?: string
   normalizedFactsCount?: number
   errors?: string[]
+  routing?: {
+    status: 'COMPLETED' | 'SKIPPED' | 'FAILED'
+    routingRunId?: string
+    recommendationsCount?: number
+    assignmentCount?: number
+    reason?: string
+    error?: string
+  }
 }
 
 type LeadDocumentListItem = {
@@ -340,6 +348,24 @@ function LeadsUploadPage() {
               ) : null}
               {status.errors?.length ? (
                 <p className="text-red-300">{status.errors.join(' | ')}</p>
+              ) : null}
+              {status.routing ? (
+                <p>
+                  <span className="text-slate-400">Routing:</span> {status.routing.status}
+                  {status.routing.routingRunId ? (
+                    <> ({status.routing.routingRunId})</>
+                  ) : null}
+                  {typeof status.routing.recommendationsCount === 'number' ? (
+                    <> | recommendations: {status.routing.recommendationsCount}</>
+                  ) : null}
+                  {typeof status.routing.assignmentCount === 'number' ? (
+                    <> | assignments: {status.routing.assignmentCount}</>
+                  ) : null}
+                  {status.routing.reason ? <> | {status.routing.reason}</> : null}
+                  {status.routing.error ? (
+                    <span className="text-red-300"> | {status.routing.error}</span>
+                  ) : null}
+                </p>
               ) : null}
             </div>
           ) : null}

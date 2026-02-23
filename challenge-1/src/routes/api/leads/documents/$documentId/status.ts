@@ -6,8 +6,9 @@ import {
   ROUTING_CORE_FACT_KEYS,
   normalizeToLeadFacts,
 } from '@/lib/leads/normalize-extraction'
+import { runDeterministicRoutingForLead } from '@/lib/routing/run-deterministic-routing'
 import { requireRoles } from '@/lib/server/auth-guard'
-import { jsonResponse } from '@/lib/server/json-response'
+import { jsonResponse, sanitizeErrorMessage } from '@/lib/server/json-response'
 
 function serializeAzureError(error: unknown): string {
   if (typeof error === 'string') {
@@ -115,10 +116,9 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
 
         if (analyze.status === 'succeeded') {
           const facts = normalizeToLeadFacts(analyze.raw)
+          const nextStatus = facts.length > 0 ? 'NORMALIZED' : 'EXTRACTED'
 
           await prisma.$transaction(async (tx) => {
-            const nextStatus = facts.length > 0 ? 'NORMALIZED' : 'EXTRACTED'
-
             await tx.leadDocument.update({
               where: { id: documentId },
               data: {
@@ -161,12 +161,70 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
             }
           })
 
+          let routing:
+            | {
+                status: 'COMPLETED'
+                routingRunId: string
+                recommendationsCount: number
+                assignmentCount: number
+              }
+            | {
+                status: 'SKIPPED'
+                reason: string
+              }
+            | {
+                status: 'FAILED'
+                error: string
+              }
+            | undefined
+
+          if (nextStatus === 'NORMALIZED' && leadId) {
+            try {
+              const routingSummary = await runDeterministicRoutingForLead({
+                leadId,
+                triggeredBy: 'system:auto',
+              })
+              routing = {
+                status: 'COMPLETED',
+                routingRunId: routingSummary.routingRunId,
+                recommendationsCount: routingSummary.recommendationsCount,
+                assignmentCount: routingSummary.assignmentCount,
+              }
+            } catch (routingError) {
+              const error = sanitizeErrorMessage(routingError)
+              routing = {
+                status: 'FAILED',
+                error,
+              }
+              await prisma.lead.update({
+                where: { id: leadId },
+                data: {
+                  currentStatus: 'routing_failed',
+                },
+              })
+              console.error('[leads.documents.status.routing.failed]', {
+                documentId,
+                leadId,
+                error,
+              })
+            }
+          } else {
+            routing = {
+              status: 'SKIPPED',
+              reason:
+                !leadId
+                  ? 'Missing lead relation for document.'
+                  : 'No normalized routing-core facts.',
+            }
+          }
+
           return jsonResponse({
             documentId,
             leadId,
-            parseStatus: facts.length > 0 ? 'NORMALIZED' : 'EXTRACTED',
+            parseStatus: nextStatus,
             progress: 'succeeded',
             normalizedFactsCount: facts.length,
+            routing,
           })
         }
 

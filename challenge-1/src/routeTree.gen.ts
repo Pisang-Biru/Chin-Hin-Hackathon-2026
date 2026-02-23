@@ -19,6 +19,7 @@ import { Route as ApiLeadsDocumentsRouteImport } from './routes/api/leads/docume
 import { Route as ApiBuAssignmentsRouteImport } from './routes/api/bu/assignments'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
+import { Route as ApiLeadsLeadIdRerouteRouteImport } from './routes/api/leads/$leadId/reroute'
 import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/users/$userId'
 import { Route as ApiLeadsDocumentsDocumentIdStatusRouteImport } from './routes/api/leads/documents/$documentId/status'
 import { Route as ApiLeadsDocumentsDocumentIdRetryRouteImport } from './routes/api/leads/documents/$documentId/retry'
@@ -74,6 +75,11 @@ const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
   path: '/api/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLeadsLeadIdRerouteRoute = ApiLeadsLeadIdRerouteRouteImport.update({
+  id: '/api/leads/$leadId/reroute',
+  path: '/api/leads/$leadId/reroute',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminUsersUserIdRoute = ApiAdminUsersUserIdRouteImport.update({
   id: '/$userId',
   path: '/$userId',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/api/leads/documents': typeof ApiLeadsDocumentsRouteWithChildren
   '/api/leads/upload': typeof ApiLeadsUploadRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
+  '/api/leads/$leadId/reroute': typeof ApiLeadsLeadIdRerouteRoute
   '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
   '/api/leads/documents/$documentId/status': typeof ApiLeadsDocumentsDocumentIdStatusRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/api/leads/documents': typeof ApiLeadsDocumentsRouteWithChildren
   '/api/leads/upload': typeof ApiLeadsUploadRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
+  '/api/leads/$leadId/reroute': typeof ApiLeadsLeadIdRerouteRoute
   '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
   '/api/leads/documents/$documentId/status': typeof ApiLeadsDocumentsDocumentIdStatusRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/api/leads/documents': typeof ApiLeadsDocumentsRouteWithChildren
   '/api/leads/upload': typeof ApiLeadsUploadRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
+  '/api/leads/$leadId/reroute': typeof ApiLeadsLeadIdRerouteRoute
   '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
   '/api/leads/documents/$documentId/status': typeof ApiLeadsDocumentsDocumentIdStatusRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/api/leads/documents'
     | '/api/leads/upload'
     | '/api/admin/users/$userId'
+    | '/api/leads/$leadId/reroute'
     | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
     | '/api/leads/documents/$documentId/status'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/api/leads/documents'
     | '/api/leads/upload'
     | '/api/admin/users/$userId'
+    | '/api/leads/$leadId/reroute'
     | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
     | '/api/leads/documents/$documentId/status'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/api/leads/documents'
     | '/api/leads/upload'
     | '/api/admin/users/$userId'
+    | '/api/leads/$leadId/reroute'
     | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
     | '/api/leads/documents/$documentId/status'
@@ -209,6 +221,7 @@ export interface RootRouteChildren {
   ApiBuAssignmentsRoute: typeof ApiBuAssignmentsRouteWithChildren
   ApiLeadsDocumentsRoute: typeof ApiLeadsDocumentsRouteWithChildren
   ApiLeadsUploadRoute: typeof ApiLeadsUploadRoute
+  ApiLeadsLeadIdRerouteRoute: typeof ApiLeadsLeadIdRerouteRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -281,6 +294,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/users'
       fullPath: '/api/admin/users'
       preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/leads/$leadId/reroute': {
+      id: '/api/leads/$leadId/reroute'
+      path: '/api/leads/$leadId/reroute'
+      fullPath: '/api/leads/$leadId/reroute'
+      preLoaderRoute: typeof ApiLeadsLeadIdRerouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/users/$userId': {
@@ -363,6 +383,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBuAssignmentsRoute: ApiBuAssignmentsRouteWithChildren,
   ApiLeadsDocumentsRoute: ApiLeadsDocumentsRouteWithChildren,
   ApiLeadsUploadRoute: ApiLeadsUploadRoute,
+  ApiLeadsLeadIdRerouteRoute: ApiLeadsLeadIdRerouteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
