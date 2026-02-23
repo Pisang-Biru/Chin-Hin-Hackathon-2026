@@ -19,6 +19,45 @@ type StatusResponse = {
   errors?: string[]
 }
 
+type LeadDocumentListItem = {
+  id: string
+  leadId: string | null
+  leadStatus: string | null
+  fileName: string
+  mimeType: string
+  fileSizeBytes: number | null
+  parseStatus: 'UPLOADED' | 'ANALYZING' | 'EXTRACTED' | 'NORMALIZED' | 'FAILED'
+  createdAt: string
+  updatedAt: string
+  analysisStartedAt: string | null
+  analysisCompletedAt: string | null
+  lastError: string | null
+  normalizedFactsCount: number
+  summary: string
+}
+
+type LeadDocumentsResponse = {
+  documents: LeadDocumentListItem[]
+}
+
+function formatBytes(sizeBytes: number | null): string {
+  if (sizeBytes === null || sizeBytes <= 0) {
+    return '-'
+  }
+
+  const units = ['B', 'KB', 'MB', 'GB']
+  let size = sizeBytes
+  let unitIndex = 0
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024
+    unitIndex += 1
+  }
+
+  const precision = unitIndex === 0 ? 0 : 1
+  return `${size.toFixed(precision)} ${units[unitIndex]}`
+}
+
 export const Route = createFileRoute('/leads/upload')({
   component: LeadsUploadPage,
 })
@@ -32,6 +71,9 @@ function LeadsUploadPage() {
   const [status, setStatus] = useState<StatusResponse | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [polling, setPolling] = useState(false)
+  const [documents, setDocuments] = useState<LeadDocumentListItem[]>([])
+  const [isDocumentsLoading, setIsDocumentsLoading] = useState(false)
+  const [documentsError, setDocumentsError] = useState<string | null>(null)
 
   const pollStartRef = useRef<number | null>(null)
 
@@ -60,6 +102,27 @@ function LeadsUploadPage() {
 
     return status.parseStatus
   }, [status])
+
+  async function loadDocuments() {
+    setIsDocumentsLoading(true)
+    setDocumentsError(null)
+
+    try {
+      const response = await fetch('/api/leads/documents')
+      const payload = (await response.json()) as LeadDocumentsResponse & { error?: string }
+
+      if (!response.ok) {
+        setDocumentsError(payload.error || 'Failed to load documents')
+        return
+      }
+
+      setDocuments(payload.documents)
+    } catch (error) {
+      setDocumentsError(error instanceof Error ? error.message : 'Failed to load documents')
+    } finally {
+      setIsDocumentsLoading(false)
+    }
+  }
 
   async function uploadFile(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -102,6 +165,7 @@ function LeadsUploadPage() {
 
       pollStartRef.current = Date.now()
       setPolling(true)
+      void loadDocuments()
     } catch (error) {
       setUploadError(error instanceof Error ? error.message : 'Upload failed')
     } finally {
@@ -125,6 +189,7 @@ function LeadsUploadPage() {
       payload.parseStatus === 'FAILED'
     ) {
       setPolling(false)
+      void loadDocuments()
       return
     }
 
@@ -169,6 +234,7 @@ function LeadsUploadPage() {
     )
     pollStartRef.current = Date.now()
     setPolling(true)
+    void loadDocuments()
   }
 
   useEffect(() => {
@@ -185,6 +251,14 @@ function LeadsUploadPage() {
 
     return () => clearInterval(timer)
   }, [polling, status?.documentId])
+
+  useEffect(() => {
+    if (!session || (role !== 'admin' && role !== 'synergy')) {
+      return
+    }
+
+    void loadDocuments()
+  }, [session, role])
 
   if (isSessionPending) {
     return (
@@ -214,7 +288,7 @@ function LeadsUploadPage() {
 
   return (
     <main className="min-h-screen bg-slate-900 text-slate-100 px-6 py-10">
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-8">
         <section className="rounded-2xl border border-slate-700 bg-slate-800/70 p-6 shadow-xl">
           <h1 className="text-2xl font-semibold mb-2">Lead Document Intake</h1>
           <p className="text-slate-300 mb-6">
@@ -280,6 +354,87 @@ function LeadsUploadPage() {
               Retry Extraction
             </button>
           ) : null}
+        </section>
+
+        <section className="rounded-2xl border border-slate-700 bg-slate-800/70 p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold">All Uploaded Documents</h2>
+              <p className="text-slate-300 text-sm">
+                All uploaded documents with extraction status and routing summary.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                void loadDocuments()
+              }}
+              disabled={isDocumentsLoading}
+              className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 disabled:opacity-60"
+            >
+              {isDocumentsLoading ? 'Refreshing...' : 'Refresh'}
+            </button>
+          </div>
+
+          {documentsError ? (
+            <p className="text-sm text-red-300">{documentsError}</p>
+          ) : null}
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1000px] text-sm">
+              <thead>
+                <tr className="border-b border-slate-700 text-left text-slate-300">
+                  <th className="pb-2 pr-3">File</th>
+                  <th className="pb-2 pr-3">Status</th>
+                  <th className="pb-2 pr-3">Lead</th>
+                  <th className="pb-2 pr-3">Facts</th>
+                  <th className="pb-2 pr-3">Uploaded</th>
+                  <th className="pb-2">Summary</th>
+                </tr>
+              </thead>
+              <tbody>
+                {documents.map((document) => (
+                  <tr key={document.id} className="border-b border-slate-800 align-top">
+                    <td className="py-2 pr-3">
+                      <div className="font-medium">{document.fileName}</div>
+                      <div className="text-xs text-slate-400">
+                        {document.mimeType} • {formatBytes(document.fileSizeBytes)}
+                      </div>
+                      <div className="font-mono text-xs text-slate-500 mt-1">{document.id}</div>
+                    </td>
+                    <td className="py-2 pr-3">
+                      <div>{document.parseStatus}</div>
+                      {document.lastError ? (
+                        <div className="text-xs text-red-300 mt-1">{document.lastError}</div>
+                      ) : null}
+                    </td>
+                    <td className="py-2 pr-3">
+                      {document.leadId ? (
+                        <>
+                          <div className="font-mono text-xs">{document.leadId}</div>
+                          <div className="text-xs text-slate-400">{document.leadStatus || '-'}</div>
+                        </>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
+                    </td>
+                    <td className="py-2 pr-3">{document.normalizedFactsCount}</td>
+                    <td className="py-2 pr-3 text-slate-300">
+                      {new Date(document.createdAt).toLocaleString()}
+                    </td>
+                    <td className="py-2 text-slate-200">{document.summary}</td>
+                  </tr>
+                ))}
+                {!isDocumentsLoading && documents.length === 0 ? (
+                  <tr>
+                    <td className="py-4 text-slate-400" colSpan={6}>
+                      No uploaded documents yet.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </main>
