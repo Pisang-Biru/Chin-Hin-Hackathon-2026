@@ -27,6 +27,88 @@ type StatusResponse = {
   }
 }
 
+type SwarmPreviewEvent =
+  | {
+      type: 'PREVIEW_OPENED'
+      leadId: string
+      timestamp: string
+    }
+  | {
+      type: 'ROUTING_STARTED'
+      leadId: string
+      triggeredBy: string
+      routingRunId: string
+      leadFactsCount: number
+      activeRuleSetsCount: number
+      timestamp: string
+    }
+  | {
+      type: 'RECOMMENDATION_SELECTED'
+      leadId: string
+      routingRunId: string
+      businessUnitId: string
+      businessUnitCode: string
+      businessUnitName: string
+      role: string
+      finalScore: number
+      confidence: number
+      reasonSummary: string
+      timestamp: string
+    }
+  | {
+      type: 'AGENT_MESSAGE'
+      leadId: string
+      routingRunId: string
+      businessUnitCode: string
+      agentId: string
+      recipientId: string | null
+      messageType: string
+      content: string
+      timestamp: string
+    }
+  | {
+      type: 'SKU_PROPOSALS'
+      leadId: string
+      routingRunId: string
+      businessUnitCode: string
+      proposals: Array<{
+        buSkuId: string
+        rank: number
+        confidence: number
+        rationale: string
+      }>
+      timestamp: string
+    }
+  | {
+      type: 'ROUTING_COMPLETED'
+      leadId: string
+      routingRunId: string
+      recommendationsCount: number
+      assignmentCount: number
+      scoredBusinessUnits: number
+      timestamp: string
+    }
+  | {
+      type: 'PREVIEW_SUMMARY'
+      leadId: string
+      routingRunId: string
+      recommendationsCount: number
+      assignmentCount: number
+      scoredBusinessUnits: number
+      timestamp: string
+    }
+  | {
+      type: 'ROUTING_FAILED'
+      leadId: string
+      routingRunId: string
+      error: string
+      timestamp: string
+    }
+  | {
+      type: 'HEARTBEAT'
+      timestamp: string
+    }
+
 type LeadDocumentListItem = {
   id: string
   leadId: string | null
@@ -66,6 +148,14 @@ function formatBytes(sizeBytes: number | null): string {
   return `${size.toFixed(precision)} ${units[unitIndex]}`
 }
 
+function toAgentLabel(agentId: string): string {
+  if (agentId === 'synergy_router' || agentId === 'synergy_deterministic_router') {
+    return 'Synergy'
+  }
+
+  return agentId.replace(/_agent$/, '').replaceAll('_', ' ').toUpperCase()
+}
+
 export const Route = createFileRoute('/leads/upload')({
   component: LeadsUploadPage,
 })
@@ -82,8 +172,13 @@ function LeadsUploadPage() {
   const [documents, setDocuments] = useState<LeadDocumentListItem[]>([])
   const [isDocumentsLoading, setIsDocumentsLoading] = useState(false)
   const [documentsError, setDocumentsError] = useState<string | null>(null)
+  const [isLivePreviewing, setIsLivePreviewing] = useState(false)
+  const [livePreviewLeadId, setLivePreviewLeadId] = useState<string | null>(null)
+  const [livePreviewError, setLivePreviewError] = useState<string | null>(null)
+  const [livePreviewEvents, setLivePreviewEvents] = useState<SwarmPreviewEvent[]>([])
 
   const pollStartRef = useRef<number | null>(null)
+  const livePreviewSourceRef = useRef<EventSource | null>(null)
 
   const canRetry = status?.parseStatus === 'FAILED' && !!status.documentId
 
@@ -245,6 +340,67 @@ function LeadsUploadPage() {
     void loadDocuments()
   }
 
+  function pushLivePreviewEvent(event: SwarmPreviewEvent) {
+    setLivePreviewEvents((previous) => {
+      const next = [...previous, event]
+      if (next.length > 120) {
+        return next.slice(next.length - 120)
+      }
+      return next
+    })
+  }
+
+  function stopLivePreview() {
+    if (livePreviewSourceRef.current) {
+      livePreviewSourceRef.current.close()
+      livePreviewSourceRef.current = null
+    }
+    setIsLivePreviewing(false)
+  }
+
+  function startLivePreview(leadId: string) {
+    stopLivePreview()
+    setLivePreviewError(null)
+    setLivePreviewLeadId(leadId)
+    setLivePreviewEvents([])
+    setIsLivePreviewing(true)
+
+    const source = new EventSource(`/api/leads/${leadId}/swarm-preview`)
+    livePreviewSourceRef.current = source
+    let streamCompleted = false
+
+    source.onmessage = (event) => {
+      let payload: SwarmPreviewEvent | null = null
+      try {
+        payload = JSON.parse(event.data) as SwarmPreviewEvent
+      } catch {
+        return
+      }
+
+      pushLivePreviewEvent(payload)
+
+      if (
+        payload.type === 'PREVIEW_SUMMARY' ||
+        payload.type === 'ROUTING_COMPLETED' ||
+        payload.type === 'ROUTING_FAILED'
+      ) {
+        streamCompleted = true
+        source.close()
+        livePreviewSourceRef.current = null
+        setIsLivePreviewing(false)
+        void loadDocuments()
+      }
+    }
+
+    source.onerror = () => {
+      if (streamCompleted) {
+        return
+      }
+      setLivePreviewError('Live preview stream disconnected.')
+      stopLivePreview()
+    }
+  }
+
   useEffect(() => {
     if (!polling || !status?.documentId) {
       return
@@ -267,6 +423,15 @@ function LeadsUploadPage() {
 
     void loadDocuments()
   }, [session, role])
+
+  useEffect(() => {
+    return () => {
+      if (livePreviewSourceRef.current) {
+        livePreviewSourceRef.current.close()
+        livePreviewSourceRef.current = null
+      }
+    }
+  }, [])
 
   if (isSessionPending) {
     return (
@@ -380,6 +545,127 @@ function LeadsUploadPage() {
               Retry Extraction
             </button>
           ) : null}
+
+          {status?.leadId ? (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => startLivePreview(status.leadId!)}
+                disabled={isLivePreviewing}
+                className="px-4 py-2 rounded-lg bg-fuchsia-600 hover:bg-fuchsia-700 disabled:opacity-60"
+              >
+                {isLivePreviewing && livePreviewLeadId === status.leadId
+                  ? 'Swarm Preview Running...'
+                  : 'Run Live Swarm Preview'}
+              </button>
+              {isLivePreviewing ? (
+                <button
+                  type="button"
+                  onClick={stopLivePreview}
+                  className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600"
+                >
+                  Stop Preview
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </section>
+
+        <section className="rounded-2xl border border-slate-700 bg-slate-800/70 p-6 shadow-xl space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold">Live Swarm Delegation Preview</h2>
+              <p className="text-slate-300 text-sm">
+                Watch Synergy and BU agents delegate tasks and propose SKUs in real time.
+              </p>
+            </div>
+            {livePreviewLeadId ? (
+              <div className="text-xs text-slate-300">
+                Lead: <span className="font-mono">{livePreviewLeadId}</span>
+              </div>
+            ) : null}
+          </div>
+
+          {livePreviewError ? <p className="text-sm text-red-300">{livePreviewError}</p> : null}
+
+          <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 max-h-[360px] overflow-y-auto space-y-2">
+            {livePreviewEvents.length === 0 ? (
+              <p className="text-sm text-slate-400">
+                Start a preview from an extracted lead to see the swarm conversation.
+              </p>
+            ) : (
+              livePreviewEvents
+                .filter((event) => event.type !== 'HEARTBEAT')
+                .map((event, index) => (
+                  <article
+                    key={`${event.type}-${index}`}
+                    className="rounded border border-slate-700 bg-slate-800 px-3 py-2"
+                  >
+                    {event.type === 'PREVIEW_OPENED' ? (
+                      <p className="text-xs text-cyan-200">
+                        Preview opened for lead <span className="font-mono">{event.leadId}</span>
+                      </p>
+                    ) : null}
+                    {event.type === 'ROUTING_STARTED' ? (
+                      <p className="text-xs text-cyan-200">
+                        Routing run <span className="font-mono">{event.routingRunId}</span> started | facts:{' '}
+                        {event.leadFactsCount} | active BU rule sets: {event.activeRuleSetsCount}
+                      </p>
+                    ) : null}
+                    {event.type === 'RECOMMENDATION_SELECTED' ? (
+                      <p className="text-xs text-emerald-200">
+                        {event.businessUnitCode} selected ({event.role}) | score {event.finalScore.toFixed(4)} |
+                        confidence {event.confidence.toFixed(4)}
+                      </p>
+                    ) : null}
+                    {event.type === 'AGENT_MESSAGE' ? (
+                      <div className="text-xs">
+                        <p className="text-fuchsia-200">
+                          {toAgentLabel(event.agentId)}
+                          {event.recipientId ? ` -> ${toAgentLabel(event.recipientId)}` : ''}
+                          {' '}({event.messageType})
+                        </p>
+                        <p className="text-slate-100 mt-1">{event.content}</p>
+                      </div>
+                    ) : null}
+                    {event.type === 'SKU_PROPOSALS' ? (
+                      <div className="text-xs">
+                        <p className="text-amber-200">{event.businessUnitCode} SKU proposals:</p>
+                        <ul className="mt-1 space-y-1 text-slate-100">
+                          {event.proposals.map((proposal) => (
+                            <li key={`${event.businessUnitCode}-${proposal.buSkuId}-${proposal.rank}`}>
+                              #{proposal.rank} {proposal.buSkuId} ({proposal.confidence.toFixed(4)}) -{' '}
+                              {proposal.rationale}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                    {event.type === 'ROUTING_COMPLETED' ? (
+                      <p className="text-xs text-emerald-300">
+                        Routing completed | run {event.routingRunId} | recommendations: {event.recommendationsCount}
+                        {' '}| assignments: {event.assignmentCount}
+                      </p>
+                    ) : null}
+                    {event.type === 'PREVIEW_SUMMARY' ? (
+                      <p className="text-xs text-cyan-300">
+                        Preview summary | run {event.routingRunId} | scored BUs: {event.scoredBusinessUnits}
+                      </p>
+                    ) : null}
+                    {event.type === 'ROUTING_FAILED' ? (
+                      <p className="text-xs text-red-300">
+                        Routing failed ({event.routingRunId}): {event.error}
+                      </p>
+                    ) : null}
+                    {'timestamp' in event ? (
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        {new Date(event.timestamp).toLocaleTimeString()}
+                      </p>
+                    ) : null}
+                  </article>
+                ))
+            )}
+          </div>
         </section>
 
         <section className="rounded-2xl border border-slate-700 bg-slate-800/70 p-6 shadow-xl space-y-4">
@@ -415,7 +701,8 @@ function LeadsUploadPage() {
                   <th className="pb-2 pr-3">Lead</th>
                   <th className="pb-2 pr-3">Facts</th>
                   <th className="pb-2 pr-3">Uploaded</th>
-                  <th className="pb-2">Summary</th>
+                  <th className="pb-2 pr-3">Summary</th>
+                  <th className="pb-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -448,12 +735,28 @@ function LeadsUploadPage() {
                     <td className="py-2 pr-3 text-slate-300">
                       {new Date(document.createdAt).toLocaleString()}
                     </td>
-                    <td className="py-2 text-slate-200">{document.summary}</td>
+                    <td className="py-2 pr-3 text-slate-200">{document.summary}</td>
+                    <td className="py-2">
+                      {document.leadId ? (
+                        <button
+                          type="button"
+                          onClick={() => startLivePreview(document.leadId!)}
+                          disabled={isLivePreviewing}
+                          className="px-3 py-1 rounded bg-fuchsia-700 hover:bg-fuchsia-600 disabled:opacity-60 text-xs"
+                        >
+                          {isLivePreviewing && livePreviewLeadId === document.leadId
+                            ? 'Previewing...'
+                            : 'Live Preview'}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-500">-</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
                 {!isDocumentsLoading && documents.length === 0 ? (
                   <tr>
-                    <td className="py-4 text-slate-400" colSpan={6}>
+                    <td className="py-4 text-slate-400" colSpan={7}>
                       No uploaded documents yet.
                     </td>
                   </tr>
