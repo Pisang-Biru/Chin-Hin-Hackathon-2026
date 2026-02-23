@@ -8,6 +8,7 @@ import type {
   BuRuleSetInput,
   DeterministicBuScore,
 } from '@/lib/routing/deterministic-engine'
+import { orchestrateBuRecommendation } from '@/lib/swarm/agent-orchestration'
 
 const DETERMINISTIC_ENGINE_VERSION = 'deterministic-v1'
 const ROUTING_AGENT_ID = 'synergy_deterministic_router'
@@ -195,19 +196,48 @@ export async function runDeterministicRoutingForLead(
         assignmentCount += 1
       }
 
-      const candidateSkus = (skuByBusinessUnit.get(recommendation.businessUnitId) ?? []).slice(
-        0,
-        3,
+      const orchestration = orchestrateBuRecommendation(
+        {
+          businessUnitId: recommendation.businessUnitId,
+          businessUnitCode: recommendation.businessUnitCode,
+          businessUnitName: recommendation.businessUnitName,
+          role: recommendation.role,
+          finalScore: recommendation.finalScore,
+          confidence: recommendation.confidence,
+          deterministicReason: recommendation.reasonSummary,
+          availableSkus: skuByBusinessUnit.get(recommendation.businessUnitId) ?? [],
+        },
+        leadFacts,
       )
-      for (const [skuIndex, sku] of candidateSkus.entries()) {
-        const confidence = Math.max(recommendation.finalScore - skuIndex * 0.05, 0.1)
+
+      await tx.routingRecommendation.update({
+        where: { id: createdRecommendation.id },
+        data: {
+          reasonSummary: orchestration.summary,
+        },
+      })
+
+      for (const proposal of orchestration.skuProposals) {
         await tx.recommendationSku.create({
           data: {
             recommendationId: createdRecommendation.id,
-            buSkuId: sku.id,
-            rank: skuIndex + 1,
-            confidence: toDecimalString(confidence),
-            rationale: `Deterministic match for ${recommendation.businessUnitCode} (score ${recommendation.finalScore.toFixed(2)}).`,
+            buSkuId: proposal.buSkuId,
+            rank: proposal.rank,
+            confidence: toDecimalString(proposal.confidence),
+            rationale: proposal.rationale,
+          },
+        })
+      }
+
+      for (const message of orchestration.agentMessages) {
+        await tx.agentLog.create({
+          data: {
+            routingRunId: routingRun.id,
+            agentId: message.agentId,
+            recipientId: message.recipientId,
+            messageType: message.messageType,
+            content: message.content,
+            evidenceRefs: message.evidenceRefs,
           },
         })
       }
