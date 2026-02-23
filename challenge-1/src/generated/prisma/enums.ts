@@ -29,6 +29,7 @@ export type IntakeChannel = (typeof IntakeChannel)[keyof typeof IntakeChannel]
 
 export const DocumentParseStatus = {
   UPLOADED: 'UPLOADED',
+  ANALYZING: 'ANALYZING',
   EXTRACTED: 'EXTRACTED',
   NORMALIZED: 'NORMALIZED',
   FAILED: 'FAILED'

@@ -480,10 +480,6 @@ export type LeadUncheckedUpdateManyWithoutSourceDocumentNestedInput = {
   deleteMany?: Prisma.LeadScalarWhereInput | Prisma.LeadScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type EnumIntakeChannelFieldUpdateOperationsInput = {
   set?: $Enums.IntakeChannel
 }

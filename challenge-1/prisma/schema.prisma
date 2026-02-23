@@ -21,6 +21,7 @@ enum IntakeChannel {
 
 enum DocumentParseStatus {
   UPLOADED
+  ANALYZING
   EXTRACTED
   NORMALIZED
   FAILED
@@ -75,19 +76,31 @@ enum OutcomeStatus {
 }
 
 model LeadDocument {
-  id                 String              @id @default(cuid())
-  fileName           String
-  mimeType           String
-  storagePath        String
-  sourceType         SourceType          @default(OTHER)
-  parseStatus        DocumentParseStatus @default(UPLOADED)
-  rawExtraction      Json?
-  extractionProvider String              @default("azure_document_intelligence")
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  id                        String              @id @default(cuid())
+  fileName                  String
+  mimeType                  String
+  storagePath               String
+  fileSizeBytes             Int?
+  contentHash               String?
+  blobEtag                  String?
+  sourceType                SourceType          @default(OTHER)
+  parseStatus               DocumentParseStatus @default(UPLOADED)
+  rawExtraction             Json?
+  extractionProvider        String              @default("azure_document_intelligence")
+  analysisModel             String?
+  analysisOperationId       String?
+  analysisOperationLocation String?
+  analysisStartedAt         DateTime?
+  analysisCompletedAt       DateTime?
+  lastError                 String?
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
 
   leads Lead[]
   facts LeadFact[]
+
+  @@index([parseStatus, createdAt])
+  @@index([analysisOperationId])
 }
 
 model Lead {

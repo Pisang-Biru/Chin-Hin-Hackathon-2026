@@ -416,10 +416,6 @@ export type EnumRoutingStatusFieldUpdateOperationsInput = {
   set?: $Enums.RoutingStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type RoutingRunCreateNestedOneWithoutRecommendationsInput = {
   create?: Prisma.XOR<Prisma.RoutingRunCreateWithoutRecommendationsInput, Prisma.RoutingRunUncheckedCreateWithoutRecommendationsInput>
   connectOrCreate?: Prisma.RoutingRunCreateOrConnectWithoutRecommendationsInput

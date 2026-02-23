@@ -20,8 +20,18 @@ export type LeadDocumentModel = runtime.Types.Result.DefaultSelection<Prisma.$Le
 
 export type AggregateLeadDocument = {
   _count: LeadDocumentCountAggregateOutputType | null
+  _avg: LeadDocumentAvgAggregateOutputType | null
+  _sum: LeadDocumentSumAggregateOutputType | null
   _min: LeadDocumentMinAggregateOutputType | null
   _max: LeadDocumentMaxAggregateOutputType | null
+}
+
+export type LeadDocumentAvgAggregateOutputType = {
+  fileSizeBytes: number | null
+}
+
+export type LeadDocumentSumAggregateOutputType = {
+  fileSizeBytes: number | null
 }
 
 export type LeadDocumentMinAggregateOutputType = {
@@ -29,9 +39,18 @@ export type LeadDocumentMinAggregateOutputType = {
   fileName: string | null
   mimeType: string | null
   storagePath: string | null
+  fileSizeBytes: number | null
+  contentHash: string | null
+  blobEtag: string | null
   sourceType: $Enums.SourceType | null
   parseStatus: $Enums.DocumentParseStatus | null
   extractionProvider: string | null
+  analysisModel: string | null
+  analysisOperationId: string | null
+  analysisOperationLocation: string | null
+  analysisStartedAt: Date | null
+  analysisCompletedAt: Date | null
+  lastError: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -41,9 +60,18 @@ export type LeadDocumentMaxAggregateOutputType = {
   fileName: string | null
   mimeType: string | null
   storagePath: string | null
+  fileSizeBytes: number | null
+  contentHash: string | null
+  blobEtag: string | null
   sourceType: $Enums.SourceType | null
   parseStatus: $Enums.DocumentParseStatus | null
   extractionProvider: string | null
+  analysisModel: string | null
+  analysisOperationId: string | null
+  analysisOperationLocation: string | null
+  analysisStartedAt: Date | null
+  analysisCompletedAt: Date | null
+  lastError: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -53,24 +81,50 @@ export type LeadDocumentCountAggregateOutputType = {
   fileName: number
   mimeType: number
   storagePath: number
+  fileSizeBytes: number
+  contentHash: number
+  blobEtag: number
   sourceType: number
   parseStatus: number
   rawExtraction: number
   extractionProvider: number
+  analysisModel: number
+  analysisOperationId: number
+  analysisOperationLocation: number
+  analysisStartedAt: number
+  analysisCompletedAt: number
+  lastError: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
+export type LeadDocumentAvgAggregateInputType = {
+  fileSizeBytes?: true
+}
+
+export type LeadDocumentSumAggregateInputType = {
+  fileSizeBytes?: true
+}
+
 export type LeadDocumentMinAggregateInputType = {
   id?: true
   fileName?: true
   mimeType?: true
   storagePath?: true
+  fileSizeBytes?: true
+  contentHash?: true
+  blobEtag?: true
   sourceType?: true
   parseStatus?: true
   extractionProvider?: true
+  analysisModel?: true
+  analysisOperationId?: true
+  analysisOperationLocation?: true
+  analysisStartedAt?: true
+  analysisCompletedAt?: true
+  lastError?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -80,9 +134,18 @@ export type LeadDocumentMaxAggregateInputType = {
   fileName?: true
   mimeType?: true
   storagePath?: true
+  fileSizeBytes?: true
+  contentHash?: true
+  blobEtag?: true
   sourceType?: true
   parseStatus?: true
   extractionProvider?: true
+  analysisModel?: true
+  analysisOperationId?: true
+  analysisOperationLocation?: true
+  analysisStartedAt?: true
+  analysisCompletedAt?: true
+  lastError?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -92,10 +155,19 @@ export type LeadDocumentCountAggregateInputType = {
   fileName?: true
   mimeType?: true
   storagePath?: true
+  fileSizeBytes?: true
+  contentHash?: true
+  blobEtag?: true
   sourceType?: true
   parseStatus?: true
   rawExtraction?: true
   extractionProvider?: true
+  analysisModel?: true
+  analysisOperationId?: true
+  analysisOperationLocation?: true
+  analysisStartedAt?: true
+  analysisCompletedAt?: true
+  lastError?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -139,6 +211,18 @@ export type LeadDocumentAggregateArgs<ExtArgs extends runtime.Types.Extensions.I
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: LeadDocumentAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: LeadDocumentSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: LeadDocumentMinAggregateInputType
@@ -169,6 +253,8 @@ export type LeadDocumentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   _count?: LeadDocumentCountAggregateInputType | true
+  _avg?: LeadDocumentAvgAggregateInputType
+  _sum?: LeadDocumentSumAggregateInputType
   _min?: LeadDocumentMinAggregateInputType
   _max?: LeadDocumentMaxAggregateInputType
 }
@@ -178,13 +264,24 @@ export type LeadDocumentGroupByOutputType = {
   fileName: string
   mimeType: string
   storagePath: string
+  fileSizeBytes: number | null
+  contentHash: string | null
+  blobEtag: string | null
   sourceType: $Enums.SourceType
   parseStatus: $Enums.DocumentParseStatus
   rawExtraction: runtime.JsonValue | null
   extractionProvider: string
+  analysisModel: string | null
+  analysisOperationId: string | null
+  analysisOperationLocation: string | null
+  analysisStartedAt: Date | null
+  analysisCompletedAt: Date | null
+  lastError: string | null
   createdAt: Date
   updatedAt: Date
   _count: LeadDocumentCountAggregateOutputType | null
+  _avg: LeadDocumentAvgAggregateOutputType | null
+  _sum: LeadDocumentSumAggregateOutputType | null
   _min: LeadDocumentMinAggregateOutputType | null
   _max: LeadDocumentMaxAggregateOutputType | null
 }
@@ -212,10 +309,19 @@ export type LeadDocumentWhereInput = {
   fileName?: Prisma.StringFilter<"LeadDocument"> | string
   mimeType?: Prisma.StringFilter<"LeadDocument"> | string
   storagePath?: Prisma.StringFilter<"LeadDocument"> | string
+  fileSizeBytes?: Prisma.IntNullableFilter<"LeadDocument"> | number | null
+  contentHash?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
+  blobEtag?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
   sourceType?: Prisma.EnumSourceTypeFilter<"LeadDocument"> | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFilter<"LeadDocument"> | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.JsonNullableFilter<"LeadDocument">
   extractionProvider?: Prisma.StringFilter<"LeadDocument"> | string
+  analysisModel?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
+  analysisOperationId?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
+  analysisOperationLocation?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
+  analysisStartedAt?: Prisma.DateTimeNullableFilter<"LeadDocument"> | Date | string | null
+  analysisCompletedAt?: Prisma.DateTimeNullableFilter<"LeadDocument"> | Date | string | null
+  lastError?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
   createdAt?: Prisma.DateTimeFilter<"LeadDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"LeadDocument"> | Date | string
   leads?: Prisma.LeadListRelationFilter
@@ -227,10 +333,19 @@ export type LeadDocumentOrderByWithRelationInput = {
   fileName?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   storagePath?: Prisma.SortOrder
+  fileSizeBytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  contentHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  blobEtag?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   parseStatus?: Prisma.SortOrder
   rawExtraction?: Prisma.SortOrderInput | Prisma.SortOrder
   extractionProvider?: Prisma.SortOrder
+  analysisModel?: Prisma.SortOrderInput | Prisma.SortOrder
+  analysisOperationId?: Prisma.SortOrderInput | Prisma.SortOrder
+  analysisOperationLocation?: Prisma.SortOrderInput | Prisma.SortOrder
+  analysisStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  analysisCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   leads?: Prisma.LeadOrderByRelationAggregateInput
@@ -245,10 +360,19 @@ export type LeadDocumentWhereUniqueInput = Prisma.AtLeast<{
   fileName?: Prisma.StringFilter<"LeadDocument"> | string
   mimeType?: Prisma.StringFilter<"LeadDocument"> | string
   storagePath?: Prisma.StringFilter<"LeadDocument"> | string
+  fileSizeBytes?: Prisma.IntNullableFilter<"LeadDocument"> | number | null
+  contentHash?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
+  blobEtag?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
   sourceType?: Prisma.EnumSourceTypeFilter<"LeadDocument"> | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFilter<"LeadDocument"> | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.JsonNullableFilter<"LeadDocument">
   extractionProvider?: Prisma.StringFilter<"LeadDocument"> | string
+  analysisModel?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
+  analysisOperationId?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
+  analysisOperationLocation?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
+  analysisStartedAt?: Prisma.DateTimeNullableFilter<"LeadDocument"> | Date | string | null
+  analysisCompletedAt?: Prisma.DateTimeNullableFilter<"LeadDocument"> | Date | string | null
+  lastError?: Prisma.StringNullableFilter<"LeadDocument"> | string | null
   createdAt?: Prisma.DateTimeFilter<"LeadDocument"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"LeadDocument"> | Date | string
   leads?: Prisma.LeadListRelationFilter
@@ -260,15 +384,26 @@ export type LeadDocumentOrderByWithAggregationInput = {
   fileName?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   storagePath?: Prisma.SortOrder
+  fileSizeBytes?: Prisma.SortOrderInput | Prisma.SortOrder
+  contentHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  blobEtag?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   parseStatus?: Prisma.SortOrder
   rawExtraction?: Prisma.SortOrderInput | Prisma.SortOrder
   extractionProvider?: Prisma.SortOrder
+  analysisModel?: Prisma.SortOrderInput | Prisma.SortOrder
+  analysisOperationId?: Prisma.SortOrderInput | Prisma.SortOrder
+  analysisOperationLocation?: Prisma.SortOrderInput | Prisma.SortOrder
+  analysisStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  analysisCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.LeadDocumentCountOrderByAggregateInput
+  _avg?: Prisma.LeadDocumentAvgOrderByAggregateInput
   _max?: Prisma.LeadDocumentMaxOrderByAggregateInput
   _min?: Prisma.LeadDocumentMinOrderByAggregateInput
+  _sum?: Prisma.LeadDocumentSumOrderByAggregateInput
 }
 
 export type LeadDocumentScalarWhereWithAggregatesInput = {
@@ -279,10 +414,19 @@ export type LeadDocumentScalarWhereWithAggregatesInput = {
   fileName?: Prisma.StringWithAggregatesFilter<"LeadDocument"> | string
   mimeType?: Prisma.StringWithAggregatesFilter<"LeadDocument"> | string
   storagePath?: Prisma.StringWithAggregatesFilter<"LeadDocument"> | string
+  fileSizeBytes?: Prisma.IntNullableWithAggregatesFilter<"LeadDocument"> | number | null
+  contentHash?: Prisma.StringNullableWithAggregatesFilter<"LeadDocument"> | string | null
+  blobEtag?: Prisma.StringNullableWithAggregatesFilter<"LeadDocument"> | string | null
   sourceType?: Prisma.EnumSourceTypeWithAggregatesFilter<"LeadDocument"> | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusWithAggregatesFilter<"LeadDocument"> | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.JsonNullableWithAggregatesFilter<"LeadDocument">
   extractionProvider?: Prisma.StringWithAggregatesFilter<"LeadDocument"> | string
+  analysisModel?: Prisma.StringNullableWithAggregatesFilter<"LeadDocument"> | string | null
+  analysisOperationId?: Prisma.StringNullableWithAggregatesFilter<"LeadDocument"> | string | null
+  analysisOperationLocation?: Prisma.StringNullableWithAggregatesFilter<"LeadDocument"> | string | null
+  analysisStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"LeadDocument"> | Date | string | null
+  analysisCompletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"LeadDocument"> | Date | string | null
+  lastError?: Prisma.StringNullableWithAggregatesFilter<"LeadDocument"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"LeadDocument"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"LeadDocument"> | Date | string
 }
@@ -292,10 +436,19 @@ export type LeadDocumentCreateInput = {
   fileName: string
   mimeType: string
   storagePath: string
+  fileSizeBytes?: number | null
+  contentHash?: string | null
+  blobEtag?: string | null
   sourceType?: $Enums.SourceType
   parseStatus?: $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: string
+  analysisModel?: string | null
+  analysisOperationId?: string | null
+  analysisOperationLocation?: string | null
+  analysisStartedAt?: Date | string | null
+  analysisCompletedAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leads?: Prisma.LeadCreateNestedManyWithoutSourceDocumentInput
@@ -307,10 +460,19 @@ export type LeadDocumentUncheckedCreateInput = {
   fileName: string
   mimeType: string
   storagePath: string
+  fileSizeBytes?: number | null
+  contentHash?: string | null
+  blobEtag?: string | null
   sourceType?: $Enums.SourceType
   parseStatus?: $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: string
+  analysisModel?: string | null
+  analysisOperationId?: string | null
+  analysisOperationLocation?: string | null
+  analysisStartedAt?: Date | string | null
+  analysisCompletedAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceDocumentInput
@@ -322,10 +484,19 @@ export type LeadDocumentUpdateInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  blobEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFieldUpdateOperationsInput | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  analysisModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  analysisCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leads?: Prisma.LeadUpdateManyWithoutSourceDocumentNestedInput
@@ -337,10 +508,19 @@ export type LeadDocumentUncheckedUpdateInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  blobEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFieldUpdateOperationsInput | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  analysisModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  analysisCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leads?: Prisma.LeadUncheckedUpdateManyWithoutSourceDocumentNestedInput
@@ -352,10 +532,19 @@ export type LeadDocumentCreateManyInput = {
   fileName: string
   mimeType: string
   storagePath: string
+  fileSizeBytes?: number | null
+  contentHash?: string | null
+  blobEtag?: string | null
   sourceType?: $Enums.SourceType
   parseStatus?: $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: string
+  analysisModel?: string | null
+  analysisOperationId?: string | null
+  analysisOperationLocation?: string | null
+  analysisStartedAt?: Date | string | null
+  analysisCompletedAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -365,10 +554,19 @@ export type LeadDocumentUpdateManyMutationInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  blobEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFieldUpdateOperationsInput | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  analysisModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  analysisCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -378,10 +576,19 @@ export type LeadDocumentUncheckedUpdateManyInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  blobEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFieldUpdateOperationsInput | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  analysisModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  analysisCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -391,12 +598,25 @@ export type LeadDocumentCountOrderByAggregateInput = {
   fileName?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   storagePath?: Prisma.SortOrder
+  fileSizeBytes?: Prisma.SortOrder
+  contentHash?: Prisma.SortOrder
+  blobEtag?: Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   parseStatus?: Prisma.SortOrder
   rawExtraction?: Prisma.SortOrder
   extractionProvider?: Prisma.SortOrder
+  analysisModel?: Prisma.SortOrder
+  analysisOperationId?: Prisma.SortOrder
+  analysisOperationLocation?: Prisma.SortOrder
+  analysisStartedAt?: Prisma.SortOrder
+  analysisCompletedAt?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type LeadDocumentAvgOrderByAggregateInput = {
+  fileSizeBytes?: Prisma.SortOrder
 }
 
 export type LeadDocumentMaxOrderByAggregateInput = {
@@ -404,9 +624,18 @@ export type LeadDocumentMaxOrderByAggregateInput = {
   fileName?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   storagePath?: Prisma.SortOrder
+  fileSizeBytes?: Prisma.SortOrder
+  contentHash?: Prisma.SortOrder
+  blobEtag?: Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   parseStatus?: Prisma.SortOrder
   extractionProvider?: Prisma.SortOrder
+  analysisModel?: Prisma.SortOrder
+  analysisOperationId?: Prisma.SortOrder
+  analysisOperationLocation?: Prisma.SortOrder
+  analysisStartedAt?: Prisma.SortOrder
+  analysisCompletedAt?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -416,11 +645,24 @@ export type LeadDocumentMinOrderByAggregateInput = {
   fileName?: Prisma.SortOrder
   mimeType?: Prisma.SortOrder
   storagePath?: Prisma.SortOrder
+  fileSizeBytes?: Prisma.SortOrder
+  contentHash?: Prisma.SortOrder
+  blobEtag?: Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   parseStatus?: Prisma.SortOrder
   extractionProvider?: Prisma.SortOrder
+  analysisModel?: Prisma.SortOrder
+  analysisOperationId?: Prisma.SortOrder
+  analysisOperationLocation?: Prisma.SortOrder
+  analysisStartedAt?: Prisma.SortOrder
+  analysisCompletedAt?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type LeadDocumentSumOrderByAggregateInput = {
+  fileSizeBytes?: Prisma.SortOrder
 }
 
 export type LeadDocumentNullableScalarRelationFilter = {
@@ -432,12 +674,28 @@ export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type EnumSourceTypeFieldUpdateOperationsInput = {
   set?: $Enums.SourceType
 }
 
 export type EnumDocumentParseStatusFieldUpdateOperationsInput = {
   set?: $Enums.DocumentParseStatus
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -481,10 +739,19 @@ export type LeadDocumentCreateWithoutLeadsInput = {
   fileName: string
   mimeType: string
   storagePath: string
+  fileSizeBytes?: number | null
+  contentHash?: string | null
+  blobEtag?: string | null
   sourceType?: $Enums.SourceType
   parseStatus?: $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: string
+  analysisModel?: string | null
+  analysisOperationId?: string | null
+  analysisOperationLocation?: string | null
+  analysisStartedAt?: Date | string | null
+  analysisCompletedAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   facts?: Prisma.LeadFactCreateNestedManyWithoutSourceDocumentInput
@@ -495,10 +762,19 @@ export type LeadDocumentUncheckedCreateWithoutLeadsInput = {
   fileName: string
   mimeType: string
   storagePath: string
+  fileSizeBytes?: number | null
+  contentHash?: string | null
+  blobEtag?: string | null
   sourceType?: $Enums.SourceType
   parseStatus?: $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: string
+  analysisModel?: string | null
+  analysisOperationId?: string | null
+  analysisOperationLocation?: string | null
+  analysisStartedAt?: Date | string | null
+  analysisCompletedAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   facts?: Prisma.LeadFactUncheckedCreateNestedManyWithoutSourceDocumentInput
@@ -525,10 +801,19 @@ export type LeadDocumentUpdateWithoutLeadsInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  blobEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFieldUpdateOperationsInput | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  analysisModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  analysisCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   facts?: Prisma.LeadFactUpdateManyWithoutSourceDocumentNestedInput
@@ -539,10 +824,19 @@ export type LeadDocumentUncheckedUpdateWithoutLeadsInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  blobEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFieldUpdateOperationsInput | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  analysisModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  analysisCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   facts?: Prisma.LeadFactUncheckedUpdateManyWithoutSourceDocumentNestedInput
@@ -553,10 +847,19 @@ export type LeadDocumentCreateWithoutFactsInput = {
   fileName: string
   mimeType: string
   storagePath: string
+  fileSizeBytes?: number | null
+  contentHash?: string | null
+  blobEtag?: string | null
   sourceType?: $Enums.SourceType
   parseStatus?: $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: string
+  analysisModel?: string | null
+  analysisOperationId?: string | null
+  analysisOperationLocation?: string | null
+  analysisStartedAt?: Date | string | null
+  analysisCompletedAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leads?: Prisma.LeadCreateNestedManyWithoutSourceDocumentInput
@@ -567,10 +870,19 @@ export type LeadDocumentUncheckedCreateWithoutFactsInput = {
   fileName: string
   mimeType: string
   storagePath: string
+  fileSizeBytes?: number | null
+  contentHash?: string | null
+  blobEtag?: string | null
   sourceType?: $Enums.SourceType
   parseStatus?: $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: string
+  analysisModel?: string | null
+  analysisOperationId?: string | null
+  analysisOperationLocation?: string | null
+  analysisStartedAt?: Date | string | null
+  analysisCompletedAt?: Date | string | null
+  lastError?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leads?: Prisma.LeadUncheckedCreateNestedManyWithoutSourceDocumentInput
@@ -597,10 +909,19 @@ export type LeadDocumentUpdateWithoutFactsInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  blobEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFieldUpdateOperationsInput | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  analysisModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  analysisCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leads?: Prisma.LeadUpdateManyWithoutSourceDocumentNestedInput
@@ -611,10 +932,19 @@ export type LeadDocumentUncheckedUpdateWithoutFactsInput = {
   fileName?: Prisma.StringFieldUpdateOperationsInput | string
   mimeType?: Prisma.StringFieldUpdateOperationsInput | string
   storagePath?: Prisma.StringFieldUpdateOperationsInput | string
+  fileSizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  contentHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  blobEtag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   sourceType?: Prisma.EnumSourceTypeFieldUpdateOperationsInput | $Enums.SourceType
   parseStatus?: Prisma.EnumDocumentParseStatusFieldUpdateOperationsInput | $Enums.DocumentParseStatus
   rawExtraction?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   extractionProvider?: Prisma.StringFieldUpdateOperationsInput | string
+  analysisModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisOperationLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  analysisCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leads?: Prisma.LeadUncheckedUpdateManyWithoutSourceDocumentNestedInput
@@ -665,10 +995,19 @@ export type LeadDocumentSelect<ExtArgs extends runtime.Types.Extensions.Internal
   fileName?: boolean
   mimeType?: boolean
   storagePath?: boolean
+  fileSizeBytes?: boolean
+  contentHash?: boolean
+  blobEtag?: boolean
   sourceType?: boolean
   parseStatus?: boolean
   rawExtraction?: boolean
   extractionProvider?: boolean
+  analysisModel?: boolean
+  analysisOperationId?: boolean
+  analysisOperationLocation?: boolean
+  analysisStartedAt?: boolean
+  analysisCompletedAt?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   leads?: boolean | Prisma.LeadDocument$leadsArgs<ExtArgs>
@@ -681,10 +1020,19 @@ export type LeadDocumentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   fileName?: boolean
   mimeType?: boolean
   storagePath?: boolean
+  fileSizeBytes?: boolean
+  contentHash?: boolean
+  blobEtag?: boolean
   sourceType?: boolean
   parseStatus?: boolean
   rawExtraction?: boolean
   extractionProvider?: boolean
+  analysisModel?: boolean
+  analysisOperationId?: boolean
+  analysisOperationLocation?: boolean
+  analysisStartedAt?: boolean
+  analysisCompletedAt?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["leadDocument"]>
@@ -694,10 +1042,19 @@ export type LeadDocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   fileName?: boolean
   mimeType?: boolean
   storagePath?: boolean
+  fileSizeBytes?: boolean
+  contentHash?: boolean
+  blobEtag?: boolean
   sourceType?: boolean
   parseStatus?: boolean
   rawExtraction?: boolean
   extractionProvider?: boolean
+  analysisModel?: boolean
+  analysisOperationId?: boolean
+  analysisOperationLocation?: boolean
+  analysisStartedAt?: boolean
+  analysisCompletedAt?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["leadDocument"]>
@@ -707,15 +1064,24 @@ export type LeadDocumentSelectScalar = {
   fileName?: boolean
   mimeType?: boolean
   storagePath?: boolean
+  fileSizeBytes?: boolean
+  contentHash?: boolean
+  blobEtag?: boolean
   sourceType?: boolean
   parseStatus?: boolean
   rawExtraction?: boolean
   extractionProvider?: boolean
+  analysisModel?: boolean
+  analysisOperationId?: boolean
+  analysisOperationLocation?: boolean
+  analysisStartedAt?: boolean
+  analysisCompletedAt?: boolean
+  lastError?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type LeadDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "mimeType" | "storagePath" | "sourceType" | "parseStatus" | "rawExtraction" | "extractionProvider" | "createdAt" | "updatedAt", ExtArgs["result"]["leadDocument"]>
+export type LeadDocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fileName" | "mimeType" | "storagePath" | "fileSizeBytes" | "contentHash" | "blobEtag" | "sourceType" | "parseStatus" | "rawExtraction" | "extractionProvider" | "analysisModel" | "analysisOperationId" | "analysisOperationLocation" | "analysisStartedAt" | "analysisCompletedAt" | "lastError" | "createdAt" | "updatedAt", ExtArgs["result"]["leadDocument"]>
 export type LeadDocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   leads?: boolean | Prisma.LeadDocument$leadsArgs<ExtArgs>
   facts?: boolean | Prisma.LeadDocument$factsArgs<ExtArgs>
@@ -735,10 +1101,19 @@ export type $LeadDocumentPayload<ExtArgs extends runtime.Types.Extensions.Intern
     fileName: string
     mimeType: string
     storagePath: string
+    fileSizeBytes: number | null
+    contentHash: string | null
+    blobEtag: string | null
     sourceType: $Enums.SourceType
     parseStatus: $Enums.DocumentParseStatus
     rawExtraction: runtime.JsonValue | null
     extractionProvider: string
+    analysisModel: string | null
+    analysisOperationId: string | null
+    analysisOperationLocation: string | null
+    analysisStartedAt: Date | null
+    analysisCompletedAt: Date | null
+    lastError: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["leadDocument"]>
@@ -1170,10 +1545,19 @@ export interface LeadDocumentFieldRefs {
   readonly fileName: Prisma.FieldRef<"LeadDocument", 'String'>
   readonly mimeType: Prisma.FieldRef<"LeadDocument", 'String'>
   readonly storagePath: Prisma.FieldRef<"LeadDocument", 'String'>
+  readonly fileSizeBytes: Prisma.FieldRef<"LeadDocument", 'Int'>
+  readonly contentHash: Prisma.FieldRef<"LeadDocument", 'String'>
+  readonly blobEtag: Prisma.FieldRef<"LeadDocument", 'String'>
   readonly sourceType: Prisma.FieldRef<"LeadDocument", 'SourceType'>
   readonly parseStatus: Prisma.FieldRef<"LeadDocument", 'DocumentParseStatus'>
   readonly rawExtraction: Prisma.FieldRef<"LeadDocument", 'Json'>
   readonly extractionProvider: Prisma.FieldRef<"LeadDocument", 'String'>
+  readonly analysisModel: Prisma.FieldRef<"LeadDocument", 'String'>
+  readonly analysisOperationId: Prisma.FieldRef<"LeadDocument", 'String'>
+  readonly analysisOperationLocation: Prisma.FieldRef<"LeadDocument", 'String'>
+  readonly analysisStartedAt: Prisma.FieldRef<"LeadDocument", 'DateTime'>
+  readonly analysisCompletedAt: Prisma.FieldRef<"LeadDocument", 'DateTime'>
+  readonly lastError: Prisma.FieldRef<"LeadDocument", 'String'>
   readonly createdAt: Prisma.FieldRef<"LeadDocument", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"LeadDocument", 'DateTime'>
 }

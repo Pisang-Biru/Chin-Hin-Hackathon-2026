@@ -1497,10 +1497,19 @@ export const LeadDocumentScalarFieldEnum = {
   fileName: 'fileName',
   mimeType: 'mimeType',
   storagePath: 'storagePath',
+  fileSizeBytes: 'fileSizeBytes',
+  contentHash: 'contentHash',
+  blobEtag: 'blobEtag',
   sourceType: 'sourceType',
   parseStatus: 'parseStatus',
   rawExtraction: 'rawExtraction',
   extractionProvider: 'extractionProvider',
+  analysisModel: 'analysisModel',
+  analysisOperationId: 'analysisOperationId',
+  analysisOperationLocation: 'analysisOperationLocation',
+  analysisStartedAt: 'analysisStartedAt',
+  analysisCompletedAt: 'analysisCompletedAt',
+  lastError: 'lastError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1751,6 +1760,20 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
  * Reference to a field of type 'SourceType'
  */
 export type EnumSourceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SourceType'>
@@ -1838,20 +1861,6 @@ export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMo
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-/**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
