@@ -8,7 +8,10 @@ import type {
   BuRuleSetInput,
   DeterministicBuScore,
 } from '@/lib/routing/deterministic-engine'
-import { orchestrateBuRecommendation } from '@/lib/swarm/agent-orchestration'
+import {
+  orchestrateBuRecommendation,
+} from '@/lib/swarm/agent-orchestration'
+import type { BuOrchestrationOutput } from '@/lib/swarm/agent-orchestration'
 
 const DETERMINISTIC_ENGINE_VERSION = 'deterministic-v1'
 const ROUTING_AGENT_ID = 'synergy_deterministic_router'
@@ -132,6 +135,7 @@ export async function runDeterministicRoutingForLead(
           businessUnitId: true,
           skuCode: true,
           skuName: true,
+          skuCategory: true,
         },
       })
     : []
@@ -144,6 +148,34 @@ export async function runDeterministicRoutingForLead(
     } else {
       skuByBusinessUnit.set(sku.businessUnitId, [sku])
     }
+  }
+
+  const orchestrationByBusinessUnit = new Map<string, BuOrchestrationOutput>()
+  const orchestrations = await Promise.all(
+    ranked.map(async (recommendation) => {
+      const orchestration = await orchestrateBuRecommendation(
+        {
+          businessUnitId: recommendation.businessUnitId,
+          businessUnitCode: recommendation.businessUnitCode,
+          businessUnitName: recommendation.businessUnitName,
+          role: recommendation.role,
+          finalScore: recommendation.finalScore,
+          confidence: recommendation.confidence,
+          deterministicReason: recommendation.reasonSummary,
+          availableSkus: skuByBusinessUnit.get(recommendation.businessUnitId) ?? [],
+        },
+        leadFacts,
+      )
+
+      return {
+        businessUnitId: recommendation.businessUnitId,
+        orchestration,
+      }
+    }),
+  )
+
+  for (const item of orchestrations) {
+    orchestrationByBusinessUnit.set(item.businessUnitId, item.orchestration)
   }
 
   const run = await prisma.$transaction(async (tx) => {
@@ -196,19 +228,10 @@ export async function runDeterministicRoutingForLead(
         assignmentCount += 1
       }
 
-      const orchestration = orchestrateBuRecommendation(
-        {
-          businessUnitId: recommendation.businessUnitId,
-          businessUnitCode: recommendation.businessUnitCode,
-          businessUnitName: recommendation.businessUnitName,
-          role: recommendation.role,
-          finalScore: recommendation.finalScore,
-          confidence: recommendation.confidence,
-          deterministicReason: recommendation.reasonSummary,
-          availableSkus: skuByBusinessUnit.get(recommendation.businessUnitId) ?? [],
-        },
-        leadFacts,
-      )
+      const orchestration = orchestrationByBusinessUnit.get(recommendation.businessUnitId)
+      if (!orchestration) {
+        continue
+      }
 
       await tx.routingRecommendation.update({
         where: { id: createdRecommendation.id },

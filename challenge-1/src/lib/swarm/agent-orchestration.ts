@@ -1,4 +1,6 @@
 import type { RecommendationRole } from '@/generated/prisma/enums'
+import { runLangChainBuConversation } from '@/lib/swarm/langchain-agent'
+import type { LangChainSwarmOutput } from '@/lib/swarm/langchain-agent'
 
 type LeadFactInput = {
   factKey: string
@@ -40,6 +42,24 @@ export type BuOrchestrationOutput = {
     content: string
     evidenceRefs: Record<string, unknown>
   }>
+}
+
+type OrchestrationDependencies = {
+  runLangChainConversation?: (input: {
+    businessUnitCode: string
+    businessUnitName: string
+    role: string
+    finalScore: number
+    deterministicReason: string
+    contextSummary: string
+    leadFacts: Array<{ factKey: string; factValue: string }>
+    availableSkus: Array<{
+      id: string
+      skuCode: string
+      skuName: string
+      skuCategory: string | null
+    }>
+  }) => Promise<LangChainSwarmOutput | null>
 }
 
 function normalize(value: string): string {
@@ -203,7 +223,24 @@ function toContextSummary(facts: LeadFactInput[]): string {
   return parts.join(' | ')
 }
 
-export function orchestrateBuRecommendation(
+function round4(value: number): number {
+  return Math.round(value * 10_000) / 10_000
+}
+
+function clamp01(value: number): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+  if (value < 0) {
+    return 0
+  }
+  if (value > 1) {
+    return 1
+  }
+  return value
+}
+
+function buildDeterministicOrchestration(
   recommendation: BuRecommendationInput,
   leadFacts: LeadFactInput[],
 ): BuOrchestrationOutput {
@@ -230,7 +267,7 @@ export function orchestrateBuRecommendation(
   const skuProposals: SwarmSkuProposal[] = proposals.map((proposal, index) => ({
     buSkuId: proposal.sku.id,
     rank: index + 1,
-    confidence: Math.round(proposal.confidence * 10_000) / 10_000,
+    confidence: round4(proposal.confidence),
     rationale:
       proposal.reasons.length > 0
         ? proposal.reasons.join(' ')
@@ -279,4 +316,119 @@ export function orchestrateBuRecommendation(
     skuProposals,
     agentMessages,
   }
+}
+
+function sanitizeLangChainSkuProposals(
+  llmOutput: LangChainSwarmOutput,
+  availableSkus: BuSkuInput[],
+  fallback: SwarmSkuProposal[],
+): SwarmSkuProposal[] {
+  const skuById = new Map(availableSkus.map((sku) => [sku.id, sku]))
+  const seen = new Set<string>()
+  const proposals: SwarmSkuProposal[] = []
+
+  for (const proposal of llmOutput.skuProposals) {
+    if (!skuById.has(proposal.skuId) || seen.has(proposal.skuId)) {
+      continue
+    }
+
+    seen.add(proposal.skuId)
+    proposals.push({
+      buSkuId: proposal.skuId,
+      rank: proposals.length + 1,
+      confidence: round4(clamp01(proposal.confidence)),
+      rationale: proposal.rationale.trim() || 'Suggested by BU agent.',
+    })
+
+    if (proposals.length >= 3) {
+      break
+    }
+  }
+
+  if (proposals.length === 0) {
+    return fallback
+  }
+
+  return proposals
+}
+
+function buildLangChainOrchestration(
+  recommendation: BuRecommendationInput,
+  llmOutput: LangChainSwarmOutput,
+  deterministicFallback: BuOrchestrationOutput,
+): BuOrchestrationOutput {
+  const skuProposals = sanitizeLangChainSkuProposals(
+    llmOutput,
+    recommendation.availableSkus,
+    deterministicFallback.skuProposals,
+  )
+
+  const summary = `${llmOutput.buReplySummary.trim()} Deterministic evidence: ${recommendation.deterministicReason}`
+
+  return {
+    summary,
+    skuProposals,
+    agentMessages: [
+      {
+        agentId: 'synergy_router',
+        recipientId: `${recommendation.businessUnitCode.toLowerCase()}_agent`,
+        messageType: 'ROUTING_CONTEXT',
+        content: llmOutput.synergyMessage.trim(),
+        evidenceRefs: {
+          source: 'langchain',
+          businessUnitId: recommendation.businessUnitId,
+          role: recommendation.role,
+          finalScore: recommendation.finalScore,
+        },
+      },
+      {
+        agentId: `${recommendation.businessUnitCode.toLowerCase()}_agent`,
+        recipientId: 'synergy_router',
+        messageType: 'BU_PROPOSAL',
+        content: summary,
+        evidenceRefs: {
+          source: 'langchain',
+          topSkuIds: skuProposals.map((proposal) => proposal.buSkuId),
+          confidence: recommendation.confidence,
+        },
+      },
+    ],
+  }
+}
+
+export async function orchestrateBuRecommendation(
+  recommendation: BuRecommendationInput,
+  leadFacts: LeadFactInput[],
+  dependencies: OrchestrationDependencies = {},
+): Promise<BuOrchestrationOutput> {
+  const deterministic = buildDeterministicOrchestration(recommendation, leadFacts)
+  const contextSummary = toContextSummary(leadFacts)
+
+  const runLangChainConversation =
+    dependencies.runLangChainConversation ?? runLangChainBuConversation
+
+  let llmOutput: LangChainSwarmOutput | null = null
+  try {
+    llmOutput = await runLangChainConversation({
+      businessUnitCode: recommendation.businessUnitCode,
+      businessUnitName: recommendation.businessUnitName,
+      role: recommendation.role,
+      finalScore: recommendation.finalScore,
+      deterministicReason: recommendation.deterministicReason,
+      contextSummary,
+      leadFacts,
+      availableSkus: recommendation.availableSkus,
+    })
+  } catch (error) {
+    console.warn('[swarm.orchestration.langchain.failed]', {
+      businessUnitCode: recommendation.businessUnitCode,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+  }
+
+  if (!llmOutput) {
+    return deterministic
+  }
+
+  return buildLangChainOrchestration(recommendation, llmOutput, deterministic)
 }
