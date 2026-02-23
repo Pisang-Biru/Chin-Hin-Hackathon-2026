@@ -1,0 +1,154 @@
+{
+  "id": "commercial-fitout-central",
+  "name": "Commercial fit-out project in Central region",
+  "rawExtraction": {
+    "analyzeResult": {
+      "content": "Commercial office tower fit out in Selangor. Project stage is Tender. Development type Interior Fit Out. Construction period from 2026 to 2027. Project value between RM50mil to RM100mil. Main Contractor: Apex Build Sdn Bhd."
+    }
+  },
+  "ruleSets": [
+    {
+      "businessUnitId": "bu_sag",
+      "businessUnitCode": "SAG",
+      "businessUnitName": "Signature Alliance Group",
+      "conditions": [
+        {
+          "factKey": "project_type",
+          "operator": "IN",
+          "comparisonValues": ["commercial", "residential"],
+          "weight": 0.3,
+          "isRequired": true
+        },
+        {
+          "factKey": "development_type",
+          "operator": "IN",
+          "comparisonValues": ["fit_out", "refurbishment"],
+          "weight": 0.35,
+          "isRequired": true
+        },
+        {
+          "factKey": "project_stage",
+          "operator": "IN",
+          "comparisonValues": ["tender", "construction"],
+          "weight": 0.2,
+          "isRequired": true
+        },
+        {
+          "factKey": "region",
+          "operator": "EXISTS",
+          "weight": 0.15,
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "businessUnitId": "bu_drymix",
+      "businessUnitCode": "STARKEN_DRYMIX",
+      "businessUnitName": "Starken Drymix",
+      "conditions": [
+        {
+          "factKey": "development_type",
+          "operator": "IN",
+          "comparisonValues": ["fit_out", "refurbishment", "new_construction"],
+          "weight": 0.3,
+          "isRequired": true
+        },
+        {
+          "factKey": "project_type",
+          "operator": "IN",
+          "comparisonValues": ["commercial", "residential"],
+          "weight": 0.25,
+          "isRequired": true
+        },
+        {
+          "factKey": "project_stage",
+          "operator": "IN",
+          "comparisonValues": ["tender", "construction"],
+          "weight": 0.2,
+          "isRequired": false
+        },
+        {
+          "factKey": "region",
+          "operator": "EXISTS",
+          "weight": 0.15,
+          "isRequired": false
+        },
+        {
+          "factKey": "project_value_band",
+          "operator": "IN",
+          "comparisonValues": ["10m_50m", "50m_100m", "gt_100m"],
+          "weight": 0.1,
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "businessUnitId": "bu_aac",
+      "businessUnitCode": "STARKEN_AAC",
+      "businessUnitName": "Starken AAC",
+      "conditions": [
+        {
+          "factKey": "project_type",
+          "operator": "IN",
+          "comparisonValues": ["residential", "commercial"],
+          "weight": 0.4,
+          "isRequired": true
+        },
+        {
+          "factKey": "development_type",
+          "operator": "IN",
+          "comparisonValues": ["new_construction"],
+          "weight": 0.6,
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "businessUnitId": "bu_gcast",
+      "businessUnitCode": "GCAST",
+      "businessUnitName": "GCast",
+      "conditions": [
+        {
+          "factKey": "project_type",
+          "operator": "EQ",
+          "comparisonValue": "infrastructure",
+          "weight": 1,
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "businessUnitId": "bu_makna",
+      "businessUnitCode": "MAKNA",
+      "businessUnitName": "Makna Setia",
+      "conditions": [
+        {
+          "factKey": "project_stage",
+          "operator": "IN",
+          "comparisonValues": ["tender", "construction"],
+          "weight": 0.5,
+          "isRequired": true
+        },
+        {
+          "factKey": "project_type",
+          "operator": "IN",
+          "comparisonValues": ["industrial", "infrastructure"],
+          "weight": 0.5,
+          "isRequired": true
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "factsInclude": [
+      "project_type:commercial",
+      "project_stage:tender",
+      "development_type:fit_out",
+      "region:central",
+      "construction_start_year:2026",
+      "construction_end_year:2027"
+    ],
+    "primaryBusinessUnitCode": "SAG",
+    "crossSellBusinessUnitCodes": ["STARKEN_DRYMIX"]
+  }
+}

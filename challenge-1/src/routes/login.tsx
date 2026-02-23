@@ -7,13 +7,15 @@ export const Route = createFileRoute('/login')({
   component: LoginPage,
 })
 
-function getRouteByRole(role: string | undefined): '/admin/users' | '/leads/upload' | '/bu/assignments' {
+function getRouteByRole(
+  role: string | undefined,
+): '/admin/users' | '/synergy/approvals' | '/bu/assignments' {
   if (role === 'admin') {
     return '/admin/users'
   }
 
   if (role === 'synergy') {
-    return '/leads/upload'
+    return '/synergy/approvals'
   }
 
   return '/bu/assignments'

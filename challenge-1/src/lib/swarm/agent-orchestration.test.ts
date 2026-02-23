@@ -33,6 +33,9 @@ describe('orchestrateBuRecommendation', () => {
         { factKey: 'development_type', factValue: 'fit_out' },
         { factKey: 'project_stage', factValue: 'tender' },
       ],
+      {
+        runLangChainConversation: async () => null,
+      },
     )
 
     expect(output.summary).toContain('Signature Alliance Group')

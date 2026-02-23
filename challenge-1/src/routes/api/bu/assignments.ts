@@ -52,6 +52,14 @@ export const Route = createFileRoute('/api/bu/assignments')({
                 currentStatus: true,
               },
             },
+            artifacts: {
+              select: {
+                id: true,
+                artifactType: true,
+                createdAt: true,
+              },
+              orderBy: { createdAt: 'desc' },
+            },
           },
         })
 
@@ -82,6 +90,12 @@ export const Route = createFileRoute('/api/bu/assignments')({
             dispatchedAt: assignment.dispatchedAt,
             businessUnit: assignment.businessUnit,
             lead: assignment.lead,
+            artifacts: assignment.artifacts.map((artifact) => ({
+              id: artifact.id,
+              artifactType: artifact.artifactType,
+              createdAt: artifact.createdAt,
+              downloadUrl: `/api/assignments/${assignment.id}/artifacts/${artifact.artifactType.toLowerCase()}`,
+            })),
           })),
           availableBusinessUnits,
         })

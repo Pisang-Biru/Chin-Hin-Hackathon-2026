@@ -4,7 +4,15 @@ import BetterAuthHeader from '../integrations/better-auth/header-user.tsx'
 import { authClient } from '@/lib/auth-client'
 
 import { useState } from 'react'
-import { BriefcaseBusiness, FileUp, Home, Menu, ShieldUser, X } from 'lucide-react'
+import {
+  BriefcaseBusiness,
+  CheckSquare,
+  FileUp,
+  Home,
+  Menu,
+  ShieldUser,
+  X,
+} from 'lucide-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -14,6 +22,7 @@ export default function Header() {
   const showLeadUpload = role === 'admin' || role === 'synergy'
   const showAdminUsers = role === 'admin'
   const showBuAssignments = role === 'admin' || role === 'synergy' || role === 'bu_user'
+  const showSynergyApprovals = role === 'admin' || role === 'synergy'
 
   return (
     <>
@@ -106,6 +115,20 @@ export default function Header() {
             >
               <BriefcaseBusiness size={20} />
               <span className="font-medium">BU Assignments</span>
+            </Link>
+          ) : null}
+          {showSynergyApprovals ? (
+            <Link
+              to="/synergy/approvals"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+              }}
+            >
+              <CheckSquare size={20} />
+              <span className="font-medium">Synergy Approvals</span>
             </Link>
           ) : null}
 

@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SynergyApprovalsRouteImport } from './routes/synergy/approvals'
 import { Route as LeadsUploadRouteImport } from './routes/leads/upload'
 import { Route as BuAssignmentsRouteImport } from './routes/bu/assignments'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as ApiSynergyApprovalsRouteImport } from './routes/api/synergy/approvals'
 import { Route as ApiLeadsUploadRouteImport } from './routes/api/leads/upload'
 import { Route as ApiLeadsDocumentsRouteImport } from './routes/api/leads/documents'
 import { Route as ApiBuAssignmentsRouteImport } from './routes/api/bu/assignments'
@@ -21,9 +23,11 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiLeadsLeadIdRerouteRouteImport } from './routes/api/leads/$leadId/reroute'
 import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/users/$userId'
+import { Route as ApiSynergyApprovalsAssignmentIdStatusRouteImport } from './routes/api/synergy/approvals/$assignmentId/status'
 import { Route as ApiLeadsDocumentsDocumentIdStatusRouteImport } from './routes/api/leads/documents/$documentId/status'
 import { Route as ApiLeadsDocumentsDocumentIdRetryRouteImport } from './routes/api/leads/documents/$documentId/retry'
 import { Route as ApiBuAssignmentsAssignmentIdStatusRouteImport } from './routes/api/bu/assignments/$assignmentId/status'
+import { Route as ApiAssignmentsAssignmentIdArtifactsArtifactTypeRouteImport } from './routes/api/assignments/$assignmentId/artifacts/$artifactType'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -33,6 +37,11 @@ const LoginRoute = LoginRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SynergyApprovalsRoute = SynergyApprovalsRouteImport.update({
+  id: '/synergy/approvals',
+  path: '/synergy/approvals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeadsUploadRoute = LeadsUploadRouteImport.update({
@@ -48,6 +57,11 @@ const BuAssignmentsRoute = BuAssignmentsRouteImport.update({
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSynergyApprovalsRoute = ApiSynergyApprovalsRouteImport.update({
+  id: '/api/synergy/approvals',
+  path: '/api/synergy/approvals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiLeadsUploadRoute = ApiLeadsUploadRouteImport.update({
@@ -85,6 +99,12 @@ const ApiAdminUsersUserIdRoute = ApiAdminUsersUserIdRouteImport.update({
   path: '/$userId',
   getParentRoute: () => ApiAdminUsersRoute,
 } as any)
+const ApiSynergyApprovalsAssignmentIdStatusRoute =
+  ApiSynergyApprovalsAssignmentIdStatusRouteImport.update({
+    id: '/$assignmentId/status',
+    path: '/$assignmentId/status',
+    getParentRoute: () => ApiSynergyApprovalsRoute,
+  } as any)
 const ApiLeadsDocumentsDocumentIdStatusRoute =
   ApiLeadsDocumentsDocumentIdStatusRouteImport.update({
     id: '/$documentId/status',
@@ -103,6 +123,12 @@ const ApiBuAssignmentsAssignmentIdStatusRoute =
     path: '/$assignmentId/status',
     getParentRoute: () => ApiBuAssignmentsRoute,
   } as any)
+const ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute =
+  ApiAssignmentsAssignmentIdArtifactsArtifactTypeRouteImport.update({
+    id: '/api/assignments/$assignmentId/artifacts/$artifactType',
+    path: '/api/assignments/$assignmentId/artifacts/$artifactType',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,16 +136,20 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof AdminUsersRoute
   '/bu/assignments': typeof BuAssignmentsRoute
   '/leads/upload': typeof LeadsUploadRoute
+  '/synergy/approvals': typeof SynergyApprovalsRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/bu/assignments': typeof ApiBuAssignmentsRouteWithChildren
   '/api/leads/documents': typeof ApiLeadsDocumentsRouteWithChildren
   '/api/leads/upload': typeof ApiLeadsUploadRoute
+  '/api/synergy/approvals': typeof ApiSynergyApprovalsRouteWithChildren
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
   '/api/leads/$leadId/reroute': typeof ApiLeadsLeadIdRerouteRoute
+  '/api/assignments/$assignmentId/artifacts/$artifactType': typeof ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute
   '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
   '/api/leads/documents/$documentId/status': typeof ApiLeadsDocumentsDocumentIdStatusRoute
+  '/api/synergy/approvals/$assignmentId/status': typeof ApiSynergyApprovalsAssignmentIdStatusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -127,16 +157,20 @@ export interface FileRoutesByTo {
   '/admin/users': typeof AdminUsersRoute
   '/bu/assignments': typeof BuAssignmentsRoute
   '/leads/upload': typeof LeadsUploadRoute
+  '/synergy/approvals': typeof SynergyApprovalsRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/bu/assignments': typeof ApiBuAssignmentsRouteWithChildren
   '/api/leads/documents': typeof ApiLeadsDocumentsRouteWithChildren
   '/api/leads/upload': typeof ApiLeadsUploadRoute
+  '/api/synergy/approvals': typeof ApiSynergyApprovalsRouteWithChildren
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
   '/api/leads/$leadId/reroute': typeof ApiLeadsLeadIdRerouteRoute
+  '/api/assignments/$assignmentId/artifacts/$artifactType': typeof ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute
   '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
   '/api/leads/documents/$documentId/status': typeof ApiLeadsDocumentsDocumentIdStatusRoute
+  '/api/synergy/approvals/$assignmentId/status': typeof ApiSynergyApprovalsAssignmentIdStatusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -145,16 +179,20 @@ export interface FileRoutesById {
   '/admin/users': typeof AdminUsersRoute
   '/bu/assignments': typeof BuAssignmentsRoute
   '/leads/upload': typeof LeadsUploadRoute
+  '/synergy/approvals': typeof SynergyApprovalsRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/bu/assignments': typeof ApiBuAssignmentsRouteWithChildren
   '/api/leads/documents': typeof ApiLeadsDocumentsRouteWithChildren
   '/api/leads/upload': typeof ApiLeadsUploadRoute
+  '/api/synergy/approvals': typeof ApiSynergyApprovalsRouteWithChildren
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
   '/api/leads/$leadId/reroute': typeof ApiLeadsLeadIdRerouteRoute
+  '/api/assignments/$assignmentId/artifacts/$artifactType': typeof ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute
   '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
   '/api/leads/documents/$documentId/status': typeof ApiLeadsDocumentsDocumentIdStatusRoute
+  '/api/synergy/approvals/$assignmentId/status': typeof ApiSynergyApprovalsAssignmentIdStatusRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -164,16 +202,20 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/bu/assignments'
     | '/leads/upload'
+    | '/synergy/approvals'
     | '/api/admin/users'
     | '/api/auth/$'
     | '/api/bu/assignments'
     | '/api/leads/documents'
     | '/api/leads/upload'
+    | '/api/synergy/approvals'
     | '/api/admin/users/$userId'
     | '/api/leads/$leadId/reroute'
+    | '/api/assignments/$assignmentId/artifacts/$artifactType'
     | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
     | '/api/leads/documents/$documentId/status'
+    | '/api/synergy/approvals/$assignmentId/status'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -181,16 +223,20 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/bu/assignments'
     | '/leads/upload'
+    | '/synergy/approvals'
     | '/api/admin/users'
     | '/api/auth/$'
     | '/api/bu/assignments'
     | '/api/leads/documents'
     | '/api/leads/upload'
+    | '/api/synergy/approvals'
     | '/api/admin/users/$userId'
     | '/api/leads/$leadId/reroute'
+    | '/api/assignments/$assignmentId/artifacts/$artifactType'
     | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
     | '/api/leads/documents/$documentId/status'
+    | '/api/synergy/approvals/$assignmentId/status'
   id:
     | '__root__'
     | '/'
@@ -198,16 +244,20 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/bu/assignments'
     | '/leads/upload'
+    | '/synergy/approvals'
     | '/api/admin/users'
     | '/api/auth/$'
     | '/api/bu/assignments'
     | '/api/leads/documents'
     | '/api/leads/upload'
+    | '/api/synergy/approvals'
     | '/api/admin/users/$userId'
     | '/api/leads/$leadId/reroute'
+    | '/api/assignments/$assignmentId/artifacts/$artifactType'
     | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
     | '/api/leads/documents/$documentId/status'
+    | '/api/synergy/approvals/$assignmentId/status'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -216,12 +266,15 @@ export interface RootRouteChildren {
   AdminUsersRoute: typeof AdminUsersRoute
   BuAssignmentsRoute: typeof BuAssignmentsRoute
   LeadsUploadRoute: typeof LeadsUploadRoute
+  SynergyApprovalsRoute: typeof SynergyApprovalsRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiBuAssignmentsRoute: typeof ApiBuAssignmentsRouteWithChildren
   ApiLeadsDocumentsRoute: typeof ApiLeadsDocumentsRouteWithChildren
   ApiLeadsUploadRoute: typeof ApiLeadsUploadRoute
+  ApiSynergyApprovalsRoute: typeof ApiSynergyApprovalsRouteWithChildren
   ApiLeadsLeadIdRerouteRoute: typeof ApiLeadsLeadIdRerouteRoute
+  ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute: typeof ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -238,6 +291,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/synergy/approvals': {
+      id: '/synergy/approvals'
+      path: '/synergy/approvals'
+      fullPath: '/synergy/approvals'
+      preLoaderRoute: typeof SynergyApprovalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leads/upload': {
@@ -259,6 +319,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/synergy/approvals': {
+      id: '/api/synergy/approvals'
+      path: '/api/synergy/approvals'
+      fullPath: '/api/synergy/approvals'
+      preLoaderRoute: typeof ApiSynergyApprovalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/leads/upload': {
@@ -310,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminUsersUserIdRouteImport
       parentRoute: typeof ApiAdminUsersRoute
     }
+    '/api/synergy/approvals/$assignmentId/status': {
+      id: '/api/synergy/approvals/$assignmentId/status'
+      path: '/$assignmentId/status'
+      fullPath: '/api/synergy/approvals/$assignmentId/status'
+      preLoaderRoute: typeof ApiSynergyApprovalsAssignmentIdStatusRouteImport
+      parentRoute: typeof ApiSynergyApprovalsRoute
+    }
     '/api/leads/documents/$documentId/status': {
       id: '/api/leads/documents/$documentId/status'
       path: '/$documentId/status'
@@ -330,6 +404,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/bu/assignments/$assignmentId/status'
       preLoaderRoute: typeof ApiBuAssignmentsAssignmentIdStatusRouteImport
       parentRoute: typeof ApiBuAssignmentsRoute
+    }
+    '/api/assignments/$assignmentId/artifacts/$artifactType': {
+      id: '/api/assignments/$assignmentId/artifacts/$artifactType'
+      path: '/api/assignments/$assignmentId/artifacts/$artifactType'
+      fullPath: '/api/assignments/$assignmentId/artifacts/$artifactType'
+      preLoaderRoute: typeof ApiAssignmentsAssignmentIdArtifactsArtifactTypeRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -372,18 +453,34 @@ const ApiLeadsDocumentsRouteChildren: ApiLeadsDocumentsRouteChildren = {
 const ApiLeadsDocumentsRouteWithChildren =
   ApiLeadsDocumentsRoute._addFileChildren(ApiLeadsDocumentsRouteChildren)
 
+interface ApiSynergyApprovalsRouteChildren {
+  ApiSynergyApprovalsAssignmentIdStatusRoute: typeof ApiSynergyApprovalsAssignmentIdStatusRoute
+}
+
+const ApiSynergyApprovalsRouteChildren: ApiSynergyApprovalsRouteChildren = {
+  ApiSynergyApprovalsAssignmentIdStatusRoute:
+    ApiSynergyApprovalsAssignmentIdStatusRoute,
+}
+
+const ApiSynergyApprovalsRouteWithChildren =
+  ApiSynergyApprovalsRoute._addFileChildren(ApiSynergyApprovalsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   AdminUsersRoute: AdminUsersRoute,
   BuAssignmentsRoute: BuAssignmentsRoute,
   LeadsUploadRoute: LeadsUploadRoute,
+  SynergyApprovalsRoute: SynergyApprovalsRoute,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiBuAssignmentsRoute: ApiBuAssignmentsRouteWithChildren,
   ApiLeadsDocumentsRoute: ApiLeadsDocumentsRouteWithChildren,
   ApiLeadsUploadRoute: ApiLeadsUploadRoute,
+  ApiSynergyApprovalsRoute: ApiSynergyApprovalsRouteWithChildren,
   ApiLeadsLeadIdRerouteRoute: ApiLeadsLeadIdRerouteRoute,
+  ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute:
+    ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

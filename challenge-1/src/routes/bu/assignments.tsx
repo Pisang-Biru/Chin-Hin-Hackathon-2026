@@ -22,6 +22,12 @@ type AssignmentItem = {
     locationText: string | null
     currentStatus?: string | null
   }
+  artifacts: Array<{
+    id: string
+    artifactType: 'JSON' | 'PDF'
+    createdAt: string
+    downloadUrl: string
+  }>
 }
 
 type AssignmentsResponse = {
@@ -160,7 +166,7 @@ function BuAssignmentsPage() {
         </section>
 
         <section className="rounded-2xl border border-slate-700 bg-slate-800/70 p-6 shadow-xl overflow-x-auto">
-          <table className="w-full min-w-[900px] text-sm">
+          <table className="w-full min-w-[1080px] text-sm">
             <thead>
               <tr className="border-b border-slate-700 text-left text-slate-300">
                 <th className="pb-2 pr-3">Assignment</th>
@@ -169,6 +175,7 @@ function BuAssignmentsPage() {
                 <th className="pb-2 pr-3">Role</th>
                 <th className="pb-2 pr-3">Status</th>
                 <th className="pb-2 pr-3">Approved</th>
+                <th className="pb-2 pr-3">Artifacts</th>
                 <th className="pb-2">Action</th>
               </tr>
             </thead>
@@ -189,6 +196,23 @@ function BuAssignmentsPage() {
                   <td className="py-2 pr-3">{assignment.assignedRole}</td>
                   <td className="py-2 pr-3">{assignment.status}</td>
                   <td className="py-2 pr-3">{new Date(assignment.approvedAt).toLocaleString()}</td>
+                  <td className="py-2 pr-3">
+                    {assignment.artifacts.length > 0 ? (
+                      <div className="flex flex-col gap-1">
+                        {assignment.artifacts.map((artifact) => (
+                          <a
+                            key={artifact.id}
+                            href={artifact.downloadUrl}
+                            className="text-cyan-300 hover:text-cyan-200 text-xs"
+                          >
+                            {artifact.artifactType}
+                          </a>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400">No artifacts</span>
+                    )}
+                  </td>
                   <td className="py-2">
                     <div className="flex gap-2">
                       <button
@@ -213,7 +237,7 @@ function BuAssignmentsPage() {
               ))}
               {assignments.length === 0 ? (
                 <tr>
-                  <td className="py-4 text-slate-400" colSpan={7}>
+                  <td className="py-4 text-slate-400" colSpan={8}>
                     No assignments found.
                   </td>
                 </tr>

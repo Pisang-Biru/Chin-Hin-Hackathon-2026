@@ -1,0 +1,135 @@
+{
+  "id": "infrastructure-southern",
+  "name": "Infrastructure project in Southern region",
+  "rawExtraction": {
+    "analyzeResult": {
+      "content": "Bridge and drainage infrastructure package in Johor. Construction stage with site works commenced. Development type New Construction. Construction period 2027 to 2029. Project value above RM100mil. Consultant: Delta Infra Consultant."
+    }
+  },
+  "ruleSets": [
+    {
+      "businessUnitId": "bu_gcast",
+      "businessUnitCode": "GCAST",
+      "businessUnitName": "GCast",
+      "conditions": [
+        {
+          "factKey": "project_type",
+          "operator": "EQ",
+          "comparisonValue": "infrastructure",
+          "weight": 0.4,
+          "isRequired": true
+        },
+        {
+          "factKey": "project_stage",
+          "operator": "IN",
+          "comparisonValues": ["construction", "tender"],
+          "weight": 0.3,
+          "isRequired": true
+        },
+        {
+          "factKey": "development_type",
+          "operator": "EQ",
+          "comparisonValue": "new_construction",
+          "weight": 0.15,
+          "isRequired": false
+        },
+        {
+          "factKey": "project_value_band",
+          "operator": "IN",
+          "comparisonValues": ["50m_100m", "gt_100m"],
+          "weight": 0.15,
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "businessUnitId": "bu_makna",
+      "businessUnitCode": "MAKNA",
+      "businessUnitName": "Makna Setia",
+      "conditions": [
+        {
+          "factKey": "project_stage",
+          "operator": "IN",
+          "comparisonValues": ["construction", "tender"],
+          "weight": 0.35,
+          "isRequired": true
+        },
+        {
+          "factKey": "project_type",
+          "operator": "IN",
+          "comparisonValues": ["infrastructure", "commercial"],
+          "weight": 0.35,
+          "isRequired": true
+        },
+        {
+          "factKey": "development_type",
+          "operator": "EQ",
+          "comparisonValue": "new_construction",
+          "weight": 0.15,
+          "isRequired": false
+        },
+        {
+          "factKey": "region",
+          "operator": "EXISTS",
+          "weight": 0.15,
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "businessUnitId": "bu_sag",
+      "businessUnitCode": "SAG",
+      "businessUnitName": "Signature Alliance Group",
+      "conditions": [
+        {
+          "factKey": "development_type",
+          "operator": "IN",
+          "comparisonValues": ["fit_out", "refurbishment"],
+          "weight": 1,
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "businessUnitId": "bu_aac",
+      "businessUnitCode": "STARKEN_AAC",
+      "businessUnitName": "Starken AAC",
+      "conditions": [
+        {
+          "factKey": "project_type",
+          "operator": "IN",
+          "comparisonValues": ["residential", "commercial"],
+          "weight": 1,
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "businessUnitId": "bu_drymix",
+      "businessUnitCode": "STARKEN_DRYMIX",
+      "businessUnitName": "Starken Drymix",
+      "conditions": [
+        {
+          "factKey": "project_type",
+          "operator": "IN",
+          "comparisonValues": ["residential", "commercial"],
+          "weight": 1,
+          "isRequired": true
+        }
+      ]
+    }
+  ],
+  "expected": {
+    "factsInclude": [
+      "project_type:infrastructure",
+      "project_stage:construction",
+      "development_type:new_construction",
+      "region:southern",
+      "construction_start_year:2027",
+      "construction_end_year:2029",
+      "project_value_band:gt_100m"
+    ],
+    "primaryBusinessUnitCode": "GCAST",
+    "crossSellBusinessUnitCodes": ["MAKNA"]
+  }
+}
