@@ -7,8 +7,310 @@ datasource db {
   provider = "postgresql"
 }
 
-model Todo {
-  id        Int      @id @default(autoincrement())
-  title     String
-  createdAt DateTime @default(now())
+enum SourceType {
+  BCI
+  NON_BCI
+  OTHER
+}
+
+enum IntakeChannel {
+  FILE_UPLOAD
+  MANUAL
+  API_IMPORT
+}
+
+enum DocumentParseStatus {
+  UPLOADED
+  EXTRACTED
+  NORMALIZED
+  FAILED
+}
+
+enum RuleSetStatus {
+  DRAFT
+  ACTIVE
+  RETIRED
+}
+
+enum RuleOperator {
+  EQ
+  IN
+  NOT_IN
+  EXISTS
+  GT
+  GTE
+  LT
+  LTE
+}
+
+enum RoutingStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum RecommendationRole {
+  PRIMARY
+  CROSS_SELL
+}
+
+enum AssignmentStatus {
+  APPROVED
+  DISPATCHED
+  CANCELED
+}
+
+enum ArtifactType {
+  JSON
+  PDF
+}
+
+enum OutcomeStatus {
+  TENDERED
+  QUOTED
+  SUPPLIED
+  SECURED
+  LOST
+}
+
+model LeadDocument {
+  id                 String              @id @default(cuid())
+  fileName           String
+  mimeType           String
+  storagePath        String
+  sourceType         SourceType          @default(OTHER)
+  parseStatus        DocumentParseStatus @default(UPLOADED)
+  rawExtraction      Json?
+  extractionProvider String              @default("azure_document_intelligence")
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  leads Lead[]
+  facts LeadFact[]
+}
+
+model Lead {
+  id               String        @id @default(cuid())
+  externalLeadRef  String?       @unique
+  projectName      String?
+  locationText     String?
+  sourceDocumentId String?
+  sourceDocument   LeadDocument? @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
+  intakeChannel    IntakeChannel @default(FILE_UPLOAD)
+  currentStatus    String        @default("parsed")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  facts         LeadFact[]
+  routingRuns   RoutingRun[]
+  assignments   Assignment[]
+  feedbackEvent FeedbackEvent[]
+
+  @@index([currentStatus])
+  @@index([createdAt])
+  @@index([sourceDocumentId])
+}
+
+model LeadFact {
+  id               String        @id @default(cuid())
+  leadId           String
+  lead             Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  factKey          String
+  factValue        String
+  confidence       Decimal       @default(1.0) @db.Decimal(5, 4)
+  sourceDocumentId String?
+  sourceDocument   LeadDocument? @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
+  createdAt        DateTime      @default(now())
+
+  @@unique([leadId, factKey, factValue])
+  @@index([leadId, factKey])
+  @@index([factKey, factValue])
+  @@index([sourceDocumentId])
+}
+
+model BusinessUnit {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  skus            BuSku[]
+  ruleSets        RoutingRuleSet[]
+  recommendations RoutingRecommendation[]
+  assignments     Assignment[]
+  feedbackEvents  FeedbackEvent[]
+}
+
+model BuSku {
+  id             String       @id @default(cuid())
+  businessUnitId String
+  businessUnit   BusinessUnit @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  skuCode        String
+  skuName        String
+  skuCategory    String?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  recommendationSkus RecommendationSku[]
+
+  @@unique([businessUnitId, skuCode])
+  @@index([businessUnitId, isActive])
+}
+
+model RoutingRuleSet {
+  id             String        @id @default(cuid())
+  businessUnitId String
+  businessUnit   BusinessUnit  @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  version        Int
+  status         RuleSetStatus @default(DRAFT)
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  conditions RoutingRuleCondition[]
+
+  @@unique([businessUnitId, version])
+  @@index([businessUnitId, status])
+}
+
+model RoutingRuleCondition {
+  id               String         @id @default(cuid())
+  ruleSetId        String
+  ruleSet          RoutingRuleSet @relation(fields: [ruleSetId], references: [id], onDelete: Cascade)
+  factKey          String
+  operator         RuleOperator
+  comparisonValue  String?
+  comparisonValues Json?
+  weight           Decimal        @db.Decimal(5, 2)
+  isRequired       Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+
+  @@index([ruleSetId, factKey])
+  @@index([factKey, operator])
+}
+
+model RoutingRun {
+  id            String        @id @default(cuid())
+  leadId        String
+  lead          Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  status        RoutingStatus @default(PENDING)
+  engineVersion String
+  startedAt     DateTime      @default(now())
+  finishedAt    DateTime?
+
+  recommendations RoutingRecommendation[]
+  agentLogs       AgentLog[]
+  feedbackEvents  FeedbackEvent[]
+
+  @@index([leadId, startedAt])
+  @@index([status])
+}
+
+model RoutingRecommendation {
+  id             String             @id @default(cuid())
+  routingRunId   String
+  routingRun     RoutingRun         @relation(fields: [routingRunId], references: [id], onDelete: Cascade)
+  businessUnitId String
+  businessUnit   BusinessUnit       @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  role           RecommendationRole
+  ruleScore      Decimal            @db.Decimal(6, 4)
+  aiScore        Decimal?           @db.Decimal(6, 4)
+  finalScore     Decimal            @db.Decimal(6, 4)
+  confidence     Decimal            @db.Decimal(6, 4)
+  reasonSummary  String
+  createdAt      DateTime           @default(now())
+
+  recommendationSkus RecommendationSku[]
+  assignments        Assignment[]
+
+  @@index([routingRunId, finalScore])
+  @@index([businessUnitId, role])
+}
+
+model RecommendationSku {
+  id               String                @id @default(cuid())
+  recommendationId String
+  recommendation   RoutingRecommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  buSkuId          String
+  buSku            BuSku                 @relation(fields: [buSkuId], references: [id], onDelete: Cascade)
+  rank             Int
+  confidence       Decimal               @db.Decimal(6, 4)
+  rationale        String
+  createdAt        DateTime              @default(now())
+
+  @@unique([recommendationId, rank])
+  @@index([buSkuId])
+}
+
+model AgentLog {
+  id           String     @id @default(cuid())
+  routingRunId String
+  routingRun   RoutingRun @relation(fields: [routingRunId], references: [id], onDelete: Cascade)
+  agentId      String
+  recipientId  String?
+  messageType  String
+  content      String
+  evidenceRefs Json?
+  createdAt    DateTime   @default(now())
+
+  @@index([routingRunId, createdAt])
+  @@index([agentId])
+}
+
+model Assignment {
+  id                      String                @id @default(cuid())
+  leadId                  String
+  lead                    Lead                  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  businessUnitId          String
+  businessUnit            BusinessUnit          @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  routingRecommendationId String
+  routingRecommendation   RoutingRecommendation @relation(fields: [routingRecommendationId], references: [id], onDelete: Cascade)
+  assignedRole            RecommendationRole
+  status                  AssignmentStatus      @default(APPROVED)
+  requiredActions         Json?
+  approvedBy              String
+  approvedAt              DateTime              @default(now())
+  dispatchedAt            DateTime?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+
+  artifacts AssignmentArtifact[]
+
+  @@unique([routingRecommendationId])
+  @@index([leadId, businessUnitId])
+  @@index([status])
+}
+
+model AssignmentArtifact {
+  id           String       @id @default(cuid())
+  assignmentId String
+  assignment   Assignment   @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  artifactType ArtifactType
+  storagePath  String
+  createdAt    DateTime     @default(now())
+
+  @@index([assignmentId, artifactType])
+}
+
+model FeedbackEvent {
+  id             String        @id @default(cuid())
+  leadId         String
+  lead           Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  businessUnitId String
+  businessUnit   BusinessUnit  @relation(fields: [businessUnitId], references: [id], onDelete: Cascade)
+  routingRunId   String?
+  routingRun     RoutingRun?   @relation(fields: [routingRunId], references: [id], onDelete: SetNull)
+  outcomeStatus  OutcomeStatus
+  notes          String?
+  metadata       Json?
+  eventAt        DateTime      @default(now())
+  createdAt      DateTime      @default(now())
+
+  @@index([leadId, eventAt])
+  @@index([businessUnitId, eventAt])
+  @@index([routingRunId])
 }
