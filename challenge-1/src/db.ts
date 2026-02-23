@@ -10,7 +10,24 @@ declare global {
   var __prisma: PrismaClient | undefined
 }
 
-export const prisma = globalThis.__prisma || new PrismaClient({ adapter })
+function createPrismaClient() {
+  return new PrismaClient({ adapter })
+}
+
+function hasAuthDelegates(client: PrismaClient): boolean {
+  return (
+    'user' in client &&
+    'session' in client &&
+    'account' in client &&
+    'verification' in client
+  )
+}
+
+const cachedPrisma = globalThis.__prisma
+export const prisma =
+  cachedPrisma && hasAuthDelegates(cachedPrisma)
+    ? cachedPrisma
+    : createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') {
   globalThis.__prisma = prisma

@@ -19,7 +19,7 @@ function getRouteByRole(role: string | undefined): '/admin/users' | '/leads/uplo
   return '/bu/assignments'
 }
 
-function LoginPage() {
+export function LoginPage() {
   const navigate = useNavigate()
   const { data: session, isPending } = authClient.useSession()
 
