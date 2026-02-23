@@ -1,19 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { prisma } from '#/db'
-import { startAnalyzeFromStream } from '#/lib/azure/docintel'
-import { getAuthenticatedSession } from '#/lib/server/auth-guard'
-import { jsonResponse, sanitizeErrorMessage } from '#/lib/server/json-response'
-import { downloadLeadDocument } from '#/lib/storage/blob'
+import { prisma } from '@/db'
+import { startAnalyzeFromStream } from '@/lib/azure/docintel'
+import { requireRoles } from '@/lib/server/auth-guard'
+import { jsonResponse, sanitizeErrorMessage } from '@/lib/server/json-response'
+import { downloadLeadDocument } from '@/lib/storage/blob'
 
 export const Route = createFileRoute('/api/leads/documents/$documentId/retry')({
   server: {
     handlers: {
       POST: async ({ request, params }) => {
-        const session = await getAuthenticatedSession(request)
-        if (!session) {
-          return jsonResponse({ error: 'Unauthorized' }, 401)
+        const authz = await requireRoles(request, ['admin', 'synergy'])
+        if (authz.response) {
+          return authz.response
         }
+        const principal = authz.principal!
 
         const document = await prisma.leadDocument.findUnique({
           where: { id: params.documentId },
@@ -77,7 +78,7 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/retry')({
               leadId: document.leads[0]?.id,
               parseStatus: 'ANALYZING',
               pollUrl: `/api/leads/documents/${document.id}/status`,
-              retriedBy: session.user.id,
+              retriedBy: principal.userId,
             },
             202,
           )

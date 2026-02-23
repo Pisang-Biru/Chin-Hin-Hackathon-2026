@@ -1,13 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { prisma } from '#/db'
-import { getAnalyzeResult } from '#/lib/azure/docintel'
+import { prisma } from '@/db'
+import { getAnalyzeResult } from '@/lib/azure/docintel'
 import {
   ROUTING_CORE_FACT_KEYS,
   normalizeToLeadFacts,
-} from '#/lib/leads/normalize-extraction'
-import { getAuthenticatedSession } from '#/lib/server/auth-guard'
-import { jsonResponse } from '#/lib/server/json-response'
+} from '@/lib/leads/normalize-extraction'
+import { requireRoles } from '@/lib/server/auth-guard'
+import { jsonResponse } from '@/lib/server/json-response'
 
 function serializeAzureError(error: unknown): string {
   if (typeof error === 'string') {
@@ -45,9 +45,9 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
   server: {
     handlers: {
       GET: async ({ request, params }) => {
-        const session = await getAuthenticatedSession(request)
-        if (!session) {
-          return jsonResponse({ error: 'Unauthorized' }, 401)
+        const authz = await requireRoles(request, ['admin', 'synergy'])
+        if (authz.response) {
+          return authz.response
         }
 
         const documentId = params.documentId
@@ -170,43 +170,34 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
           })
         }
 
-        if (analyze.status === 'failed' || analyze.status === 'unknown') {
-          const message = serializeAzureError(analyze.error)
+        const message = serializeAzureError(analyze.error)
 
-          await prisma.$transaction(async (tx) => {
-            await tx.leadDocument.update({
-              where: { id: documentId },
+        await prisma.$transaction(async (tx) => {
+          await tx.leadDocument.update({
+            where: { id: documentId },
+            data: {
+              parseStatus: 'FAILED',
+              lastError: message,
+              analysisCompletedAt: new Date(),
+            },
+          })
+
+          if (leadId) {
+            await tx.lead.update({
+              where: { id: leadId },
               data: {
-                parseStatus: 'FAILED',
-                lastError: message,
-                analysisCompletedAt: new Date(),
+                currentStatus: 'failed',
               },
             })
-
-            if (leadId) {
-              await tx.lead.update({
-                where: { id: leadId },
-                data: {
-                  currentStatus: 'failed',
-                },
-              })
-            }
-          })
-
-          return jsonResponse({
-            documentId,
-            leadId,
-            parseStatus: 'FAILED',
-            progress: 'failed',
-            errors: [message],
-          })
-        }
+          }
+        })
 
         return jsonResponse({
           documentId,
           leadId,
-          parseStatus: 'ANALYZING',
-          progress: analyze.status,
+          parseStatus: 'FAILED',
+          progress: 'failed',
+          errors: [message],
         })
       },
     },

@@ -9,13 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LeadsUploadRouteImport } from './routes/leads/upload'
+import { Route as BuAssignmentsRouteImport } from './routes/bu/assignments'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as ApiLeadsUploadRouteImport } from './routes/api/leads/upload'
+import { Route as ApiBuAssignmentsRouteImport } from './routes/api/bu/assignments'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
+import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/users/$userId'
 import { Route as ApiLeadsDocumentsDocumentIdStatusRouteImport } from './routes/api/leads/documents/$documentId/status'
 import { Route as ApiLeadsDocumentsDocumentIdRetryRouteImport } from './routes/api/leads/documents/$documentId/retry'
+import { Route as ApiBuAssignmentsAssignmentIdStatusRouteImport } from './routes/api/bu/assignments/$assignmentId/status'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -26,15 +38,40 @@ const LeadsUploadRoute = LeadsUploadRouteImport.update({
   path: '/leads/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuAssignmentsRoute = BuAssignmentsRouteImport.update({
+  id: '/bu/assignments',
+  path: '/bu/assignments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLeadsUploadRoute = ApiLeadsUploadRouteImport.update({
   id: '/api/leads/upload',
   path: '/api/leads/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBuAssignmentsRoute = ApiBuAssignmentsRouteImport.update({
+  id: '/api/bu/assignments',
+  path: '/api/bu/assignments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
+  id: '/api/admin/users',
+  path: '/api/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminUsersUserIdRoute = ApiAdminUsersUserIdRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => ApiAdminUsersRoute,
 } as any)
 const ApiLeadsDocumentsDocumentIdStatusRoute =
   ApiLeadsDocumentsDocumentIdStatusRouteImport.update({
@@ -48,29 +85,56 @@ const ApiLeadsDocumentsDocumentIdRetryRoute =
     path: '/api/leads/documents/$documentId/retry',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiBuAssignmentsAssignmentIdStatusRoute =
+  ApiBuAssignmentsAssignmentIdStatusRouteImport.update({
+    id: '/$assignmentId/status',
+    path: '/$assignmentId/status',
+    getParentRoute: () => ApiBuAssignmentsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/bu/assignments': typeof BuAssignmentsRoute
   '/leads/upload': typeof LeadsUploadRoute
+  '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/bu/assignments': typeof ApiBuAssignmentsRouteWithChildren
   '/api/leads/upload': typeof ApiLeadsUploadRoute
+  '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
+  '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
   '/api/leads/documents/$documentId/status': typeof ApiLeadsDocumentsDocumentIdStatusRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/bu/assignments': typeof BuAssignmentsRoute
   '/leads/upload': typeof LeadsUploadRoute
+  '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/bu/assignments': typeof ApiBuAssignmentsRouteWithChildren
   '/api/leads/upload': typeof ApiLeadsUploadRoute
+  '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
+  '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
   '/api/leads/documents/$documentId/status': typeof ApiLeadsDocumentsDocumentIdStatusRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/bu/assignments': typeof BuAssignmentsRoute
   '/leads/upload': typeof LeadsUploadRoute
+  '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/bu/assignments': typeof ApiBuAssignmentsRouteWithChildren
   '/api/leads/upload': typeof ApiLeadsUploadRoute
+  '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
+  '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
   '/api/leads/documents/$documentId/status': typeof ApiLeadsDocumentsDocumentIdStatusRoute
 }
@@ -78,33 +142,59 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
+    | '/admin/users'
+    | '/bu/assignments'
     | '/leads/upload'
+    | '/api/admin/users'
     | '/api/auth/$'
+    | '/api/bu/assignments'
     | '/api/leads/upload'
+    | '/api/admin/users/$userId'
+    | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
     | '/api/leads/documents/$documentId/status'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
+    | '/admin/users'
+    | '/bu/assignments'
     | '/leads/upload'
+    | '/api/admin/users'
     | '/api/auth/$'
+    | '/api/bu/assignments'
     | '/api/leads/upload'
+    | '/api/admin/users/$userId'
+    | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
     | '/api/leads/documents/$documentId/status'
   id:
     | '__root__'
     | '/'
+    | '/login'
+    | '/admin/users'
+    | '/bu/assignments'
     | '/leads/upload'
+    | '/api/admin/users'
     | '/api/auth/$'
+    | '/api/bu/assignments'
     | '/api/leads/upload'
+    | '/api/admin/users/$userId'
+    | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
     | '/api/leads/documents/$documentId/status'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  BuAssignmentsRoute: typeof BuAssignmentsRoute
   LeadsUploadRoute: typeof LeadsUploadRoute
+  ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiBuAssignmentsRoute: typeof ApiBuAssignmentsRouteWithChildren
   ApiLeadsUploadRoute: typeof ApiLeadsUploadRoute
   ApiLeadsDocumentsDocumentIdRetryRoute: typeof ApiLeadsDocumentsDocumentIdRetryRoute
   ApiLeadsDocumentsDocumentIdStatusRoute: typeof ApiLeadsDocumentsDocumentIdStatusRoute
@@ -112,6 +202,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -126,11 +223,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeadsUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bu/assignments': {
+      id: '/bu/assignments'
+      path: '/bu/assignments'
+      fullPath: '/bu/assignments'
+      preLoaderRoute: typeof BuAssignmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/leads/upload': {
       id: '/api/leads/upload'
       path: '/api/leads/upload'
       fullPath: '/api/leads/upload'
       preLoaderRoute: typeof ApiLeadsUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bu/assignments': {
+      id: '/api/bu/assignments'
+      path: '/api/bu/assignments'
+      fullPath: '/api/bu/assignments'
+      preLoaderRoute: typeof ApiBuAssignmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -139,6 +257,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/users': {
+      id: '/api/admin/users'
+      path: '/api/admin/users'
+      fullPath: '/api/admin/users'
+      preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/users/$userId': {
+      id: '/api/admin/users/$userId'
+      path: '/$userId'
+      fullPath: '/api/admin/users/$userId'
+      preLoaderRoute: typeof ApiAdminUsersUserIdRouteImport
+      parentRoute: typeof ApiAdminUsersRoute
     }
     '/api/leads/documents/$documentId/status': {
       id: '/api/leads/documents/$documentId/status'
@@ -154,13 +286,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLeadsDocumentsDocumentIdRetryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/bu/assignments/$assignmentId/status': {
+      id: '/api/bu/assignments/$assignmentId/status'
+      path: '/$assignmentId/status'
+      fullPath: '/api/bu/assignments/$assignmentId/status'
+      preLoaderRoute: typeof ApiBuAssignmentsAssignmentIdStatusRouteImport
+      parentRoute: typeof ApiBuAssignmentsRoute
+    }
   }
 }
 
+interface ApiAdminUsersRouteChildren {
+  ApiAdminUsersUserIdRoute: typeof ApiAdminUsersUserIdRoute
+}
+
+const ApiAdminUsersRouteChildren: ApiAdminUsersRouteChildren = {
+  ApiAdminUsersUserIdRoute: ApiAdminUsersUserIdRoute,
+}
+
+const ApiAdminUsersRouteWithChildren = ApiAdminUsersRoute._addFileChildren(
+  ApiAdminUsersRouteChildren,
+)
+
+interface ApiBuAssignmentsRouteChildren {
+  ApiBuAssignmentsAssignmentIdStatusRoute: typeof ApiBuAssignmentsAssignmentIdStatusRoute
+}
+
+const ApiBuAssignmentsRouteChildren: ApiBuAssignmentsRouteChildren = {
+  ApiBuAssignmentsAssignmentIdStatusRoute:
+    ApiBuAssignmentsAssignmentIdStatusRoute,
+}
+
+const ApiBuAssignmentsRouteWithChildren =
+  ApiBuAssignmentsRoute._addFileChildren(ApiBuAssignmentsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  BuAssignmentsRoute: BuAssignmentsRoute,
   LeadsUploadRoute: LeadsUploadRoute,
+  ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiBuAssignmentsRoute: ApiBuAssignmentsRouteWithChildren,
   ApiLeadsUploadRoute: ApiLeadsUploadRoute,
   ApiLeadsDocumentsDocumentIdRetryRoute: ApiLeadsDocumentsDocumentIdRetryRoute,
   ApiLeadsDocumentsDocumentIdStatusRoute:

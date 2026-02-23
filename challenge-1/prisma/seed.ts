@@ -1,5 +1,6 @@
-import { PrismaClient } from '../src/generated/prisma/client.js'
+import { hashPassword } from 'better-auth/crypto'
 
+import { PrismaClient } from '../src/generated/prisma/client.js'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 const adapter = new PrismaPg({
@@ -7,6 +8,133 @@ const adapter = new PrismaPg({
 })
 
 const prisma = new PrismaClient({ adapter })
+
+const TEMP_PASSWORD = 'TempPass#123'
+
+type SeedUser = {
+  email: string
+  name: string
+  role: 'admin' | 'synergy' | 'bu_user'
+  businessUnitCode?: string
+}
+
+async function seedUsers() {
+  const businessUnits = await prisma.businessUnit.findMany({
+    select: { id: true, code: true, name: true },
+  })
+  const businessUnitByCode = new Map(businessUnits.map((bu) => [bu.code, bu]))
+
+  const usersToSeed: SeedUser[] = [
+    {
+      email: 'admin@chin-hin.local',
+      name: 'Platform Admin',
+      role: 'admin',
+    },
+    {
+      email: 'synergy@chin-hin.local',
+      name: 'Synergy Team',
+      role: 'synergy',
+    },
+    {
+      email: 'aac@chin-hin.local',
+      name: 'Starken AAC User',
+      role: 'bu_user',
+      businessUnitCode: 'STARKEN_AAC',
+    },
+    {
+      email: 'drymix@chin-hin.local',
+      name: 'Starken Drymix User',
+      role: 'bu_user',
+      businessUnitCode: 'STARKEN_DRYMIX',
+    },
+    {
+      email: 'gcast@chin-hin.local',
+      name: 'GCast User',
+      role: 'bu_user',
+      businessUnitCode: 'GCAST',
+    },
+    {
+      email: 'makna@chin-hin.local',
+      name: 'Makna User',
+      role: 'bu_user',
+      businessUnitCode: 'MAKNA',
+    },
+    {
+      email: 'sag@chin-hin.local',
+      name: 'SAG User',
+      role: 'bu_user',
+      businessUnitCode: 'SAG',
+    },
+  ]
+
+  const passwordHash = await hashPassword(TEMP_PASSWORD)
+
+  for (const seedUser of usersToSeed) {
+    const businessUnit =
+      seedUser.businessUnitCode !== undefined
+        ? businessUnitByCode.get(seedUser.businessUnitCode)
+        : undefined
+
+    if (seedUser.role === 'bu_user' && !businessUnit) {
+      throw new Error(
+        `Missing business unit for code ${seedUser.businessUnitCode ?? 'unknown'}.`,
+      )
+    }
+
+    const user = await prisma.user.upsert({
+      where: { email: seedUser.email.toLowerCase() },
+      create: {
+        email: seedUser.email.toLowerCase(),
+        name: seedUser.name,
+        role: seedUser.role,
+      },
+      update: {
+        name: seedUser.name,
+        role: seedUser.role,
+      },
+      select: { id: true, email: true, role: true },
+    })
+
+    await prisma.account.upsert({
+      where: {
+        providerId_accountId: {
+          providerId: 'credential',
+          accountId: user.id,
+        },
+      },
+      create: {
+        accountId: user.id,
+        providerId: 'credential',
+        userId: user.id,
+        password: passwordHash,
+      },
+      update: {
+        password: passwordHash,
+      },
+    })
+
+    await prisma.appUserProfile.upsert({
+      where: {
+        userId: user.id,
+      },
+      create: {
+        userId: user.id,
+        primaryBusinessUnitId: seedUser.role === 'bu_user' ? businessUnit!.id : null,
+      },
+      update: {
+        primaryBusinessUnitId: seedUser.role === 'bu_user' ? businessUnit!.id : null,
+      },
+    })
+  }
+
+  console.log('✅ Seeded auth users:')
+  for (const user of usersToSeed) {
+    const businessUnitName = user.businessUnitCode
+      ? businessUnitByCode.get(user.businessUnitCode)?.name ?? 'Unknown BU'
+      : 'N/A'
+    console.log(`- ${user.email} (${user.role}) BU: ${businessUnitName}`)
+  }
+}
 
 async function main() {
   console.log('🌱 Seeding database...')
@@ -179,7 +307,11 @@ async function main() {
     ],
   })
 
-  console.log(`✅ Seeded ${businessUnits.length} business units with baseline rules and SKUs`)
+  await seedUsers()
+
+  console.log(
+    `✅ Seeded ${businessUnits.length} business units with baseline rules and SKUs`,
+  )
 }
 
 main()

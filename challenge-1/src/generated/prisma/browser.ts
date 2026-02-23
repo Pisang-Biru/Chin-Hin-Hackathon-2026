@@ -87,3 +87,28 @@ export type AssignmentArtifact = Prisma.AssignmentArtifactModel
  * 
  */
 export type FeedbackEvent = Prisma.FeedbackEventModel
+/**
+ * Model user
+ * 
+ */
+export type user = Prisma.userModel
+/**
+ * Model session
+ * 
+ */
+export type session = Prisma.sessionModel
+/**
+ * Model account
+ * 
+ */
+export type account = Prisma.accountModel
+/**
+ * Model verification
+ * 
+ */
+export type verification = Prisma.verificationModel
+/**
+ * Model AppUserProfile
+ * 
+ */
+export type AppUserProfile = Prisma.AppUserProfileModel

@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { prisma } from '#/db'
-import { getDocumentModelName, startAnalyzeFromStream } from '#/lib/azure/docintel'
-import { validateUploadFile } from '#/lib/leads/upload-validation'
-import { getAuthenticatedSession } from '#/lib/server/auth-guard'
-import { jsonResponse, sanitizeErrorMessage } from '#/lib/server/json-response'
-import { uploadLeadDocument } from '#/lib/storage/blob'
+import { prisma } from '@/db'
+import { getDocumentModelName, startAnalyzeFromStream } from '@/lib/azure/docintel'
+import { validateUploadFile } from '@/lib/leads/upload-validation'
+import { requireRoles } from '@/lib/server/auth-guard'
+import { jsonResponse, sanitizeErrorMessage } from '@/lib/server/json-response'
+import { uploadLeadDocument } from '@/lib/storage/blob'
 
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', bytes)
@@ -18,10 +18,11 @@ export const Route = createFileRoute('/api/leads/upload')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const session = await getAuthenticatedSession(request)
-        if (!session) {
-          return jsonResponse({ error: 'Unauthorized' }, 401)
+        const authz = await requireRoles(request, ['admin', 'synergy'])
+        if (authz.response) {
+          return authz.response
         }
+        const principal = authz.principal!
 
         const formData = await request.formData()
         const fileEntry = formData.get('file')
@@ -95,7 +96,7 @@ export const Route = createFileRoute('/api/leads/upload')({
               leadId: bootstrap.lead.id,
               parseStatus: 'ANALYZING',
               pollUrl: `/api/leads/documents/${bootstrap.document.id}/status`,
-              uploadedBy: session.user.id,
+              uploadedBy: principal.userId,
             },
             202,
           )

@@ -1,5 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
+
+import { authClient } from '@/lib/auth-client'
 
 type UploadResponse = {
   documentId: string
@@ -22,6 +24,9 @@ export const Route = createFileRoute('/leads/upload')({
 })
 
 function LeadsUploadPage() {
+  const { data: session, isPending: isSessionPending } = authClient.useSession()
+  const role = (session?.user as { role?: string } | undefined)?.role
+
   const [file, setFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [status, setStatus] = useState<StatusResponse | null>(null)
@@ -180,6 +185,32 @@ function LeadsUploadPage() {
 
     return () => clearInterval(timer)
   }, [polling, status?.documentId])
+
+  if (isSessionPending) {
+    return (
+      <main className="min-h-screen bg-slate-900 text-slate-100 px-6 py-10">
+        <p className="text-slate-300">Checking session...</p>
+      </main>
+    )
+  }
+
+  if (!session) {
+    return (
+      <main className="min-h-screen bg-slate-900 text-slate-100 px-6 py-10">
+        <p className="text-slate-300">
+          You are not signed in. <Link to="/login" className="text-cyan-300">Go to login</Link>.
+        </p>
+      </main>
+    )
+  }
+
+  if (role !== 'admin' && role !== 'synergy') {
+    return (
+      <main className="min-h-screen bg-slate-900 text-slate-100 px-6 py-10">
+        <p className="text-red-300">Forbidden. Admin or synergy role required.</p>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-slate-900 text-slate-100 px-6 py-10">

@@ -195,6 +195,7 @@ export type BusinessUnitWhereInput = {
   recommendations?: Prisma.RoutingRecommendationListRelationFilter
   assignments?: Prisma.AssignmentListRelationFilter
   feedbackEvents?: Prisma.FeedbackEventListRelationFilter
+  userProfiles?: Prisma.AppUserProfileListRelationFilter
 }
 
 export type BusinessUnitOrderByWithRelationInput = {
@@ -209,6 +210,7 @@ export type BusinessUnitOrderByWithRelationInput = {
   recommendations?: Prisma.RoutingRecommendationOrderByRelationAggregateInput
   assignments?: Prisma.AssignmentOrderByRelationAggregateInput
   feedbackEvents?: Prisma.FeedbackEventOrderByRelationAggregateInput
+  userProfiles?: Prisma.AppUserProfileOrderByRelationAggregateInput
 }
 
 export type BusinessUnitWhereUniqueInput = Prisma.AtLeast<{
@@ -226,6 +228,7 @@ export type BusinessUnitWhereUniqueInput = Prisma.AtLeast<{
   recommendations?: Prisma.RoutingRecommendationListRelationFilter
   assignments?: Prisma.AssignmentListRelationFilter
   feedbackEvents?: Prisma.FeedbackEventListRelationFilter
+  userProfiles?: Prisma.AppUserProfileListRelationFilter
 }, "id" | "code">
 
 export type BusinessUnitOrderByWithAggregationInput = {
@@ -264,6 +267,7 @@ export type BusinessUnitCreateInput = {
   recommendations?: Prisma.RoutingRecommendationCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitUncheckedCreateInput = {
@@ -278,6 +282,7 @@ export type BusinessUnitUncheckedCreateInput = {
   recommendations?: Prisma.RoutingRecommendationUncheckedCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentUncheckedCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileUncheckedCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitUpdateInput = {
@@ -292,6 +297,7 @@ export type BusinessUnitUpdateInput = {
   recommendations?: Prisma.RoutingRecommendationUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitUncheckedUpdateInput = {
@@ -306,6 +312,7 @@ export type BusinessUnitUncheckedUpdateInput = {
   recommendations?: Prisma.RoutingRecommendationUncheckedUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUncheckedUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUncheckedUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitCreateManyInput = {
@@ -365,6 +372,11 @@ export type BusinessUnitMinOrderByAggregateInput = {
 export type BusinessUnitScalarRelationFilter = {
   is?: Prisma.BusinessUnitWhereInput
   isNot?: Prisma.BusinessUnitWhereInput
+}
+
+export type BusinessUnitNullableScalarRelationFilter = {
+  is?: Prisma.BusinessUnitWhereInput | null
+  isNot?: Prisma.BusinessUnitWhereInput | null
 }
 
 export type BoolFieldUpdateOperationsInput = {
@@ -441,6 +453,22 @@ export type BusinessUnitUpdateOneRequiredWithoutFeedbackEventsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BusinessUnitUpdateToOneWithWhereWithoutFeedbackEventsInput, Prisma.BusinessUnitUpdateWithoutFeedbackEventsInput>, Prisma.BusinessUnitUncheckedUpdateWithoutFeedbackEventsInput>
 }
 
+export type BusinessUnitCreateNestedOneWithoutUserProfilesInput = {
+  create?: Prisma.XOR<Prisma.BusinessUnitCreateWithoutUserProfilesInput, Prisma.BusinessUnitUncheckedCreateWithoutUserProfilesInput>
+  connectOrCreate?: Prisma.BusinessUnitCreateOrConnectWithoutUserProfilesInput
+  connect?: Prisma.BusinessUnitWhereUniqueInput
+}
+
+export type BusinessUnitUpdateOneWithoutUserProfilesNestedInput = {
+  create?: Prisma.XOR<Prisma.BusinessUnitCreateWithoutUserProfilesInput, Prisma.BusinessUnitUncheckedCreateWithoutUserProfilesInput>
+  connectOrCreate?: Prisma.BusinessUnitCreateOrConnectWithoutUserProfilesInput
+  upsert?: Prisma.BusinessUnitUpsertWithoutUserProfilesInput
+  disconnect?: Prisma.BusinessUnitWhereInput | boolean
+  delete?: Prisma.BusinessUnitWhereInput | boolean
+  connect?: Prisma.BusinessUnitWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BusinessUnitUpdateToOneWithWhereWithoutUserProfilesInput, Prisma.BusinessUnitUpdateWithoutUserProfilesInput>, Prisma.BusinessUnitUncheckedUpdateWithoutUserProfilesInput>
+}
+
 export type BusinessUnitCreateWithoutSkusInput = {
   id?: string
   code: string
@@ -452,6 +480,7 @@ export type BusinessUnitCreateWithoutSkusInput = {
   recommendations?: Prisma.RoutingRecommendationCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitUncheckedCreateWithoutSkusInput = {
@@ -465,6 +494,7 @@ export type BusinessUnitUncheckedCreateWithoutSkusInput = {
   recommendations?: Prisma.RoutingRecommendationUncheckedCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentUncheckedCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileUncheckedCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitCreateOrConnectWithoutSkusInput = {
@@ -494,6 +524,7 @@ export type BusinessUnitUpdateWithoutSkusInput = {
   recommendations?: Prisma.RoutingRecommendationUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitUncheckedUpdateWithoutSkusInput = {
@@ -507,6 +538,7 @@ export type BusinessUnitUncheckedUpdateWithoutSkusInput = {
   recommendations?: Prisma.RoutingRecommendationUncheckedUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUncheckedUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUncheckedUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitCreateWithoutRuleSetsInput = {
@@ -520,6 +552,7 @@ export type BusinessUnitCreateWithoutRuleSetsInput = {
   recommendations?: Prisma.RoutingRecommendationCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitUncheckedCreateWithoutRuleSetsInput = {
@@ -533,6 +566,7 @@ export type BusinessUnitUncheckedCreateWithoutRuleSetsInput = {
   recommendations?: Prisma.RoutingRecommendationUncheckedCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentUncheckedCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileUncheckedCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitCreateOrConnectWithoutRuleSetsInput = {
@@ -562,6 +596,7 @@ export type BusinessUnitUpdateWithoutRuleSetsInput = {
   recommendations?: Prisma.RoutingRecommendationUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitUncheckedUpdateWithoutRuleSetsInput = {
@@ -575,6 +610,7 @@ export type BusinessUnitUncheckedUpdateWithoutRuleSetsInput = {
   recommendations?: Prisma.RoutingRecommendationUncheckedUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUncheckedUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUncheckedUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitCreateWithoutRecommendationsInput = {
@@ -588,6 +624,7 @@ export type BusinessUnitCreateWithoutRecommendationsInput = {
   ruleSets?: Prisma.RoutingRuleSetCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitUncheckedCreateWithoutRecommendationsInput = {
@@ -601,6 +638,7 @@ export type BusinessUnitUncheckedCreateWithoutRecommendationsInput = {
   ruleSets?: Prisma.RoutingRuleSetUncheckedCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentUncheckedCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileUncheckedCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitCreateOrConnectWithoutRecommendationsInput = {
@@ -630,6 +668,7 @@ export type BusinessUnitUpdateWithoutRecommendationsInput = {
   ruleSets?: Prisma.RoutingRuleSetUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitUncheckedUpdateWithoutRecommendationsInput = {
@@ -643,6 +682,7 @@ export type BusinessUnitUncheckedUpdateWithoutRecommendationsInput = {
   ruleSets?: Prisma.RoutingRuleSetUncheckedUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUncheckedUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUncheckedUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitCreateWithoutAssignmentsInput = {
@@ -656,6 +696,7 @@ export type BusinessUnitCreateWithoutAssignmentsInput = {
   ruleSets?: Prisma.RoutingRuleSetCreateNestedManyWithoutBusinessUnitInput
   recommendations?: Prisma.RoutingRecommendationCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitUncheckedCreateWithoutAssignmentsInput = {
@@ -669,6 +710,7 @@ export type BusinessUnitUncheckedCreateWithoutAssignmentsInput = {
   ruleSets?: Prisma.RoutingRuleSetUncheckedCreateNestedManyWithoutBusinessUnitInput
   recommendations?: Prisma.RoutingRecommendationUncheckedCreateNestedManyWithoutBusinessUnitInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileUncheckedCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitCreateOrConnectWithoutAssignmentsInput = {
@@ -698,6 +740,7 @@ export type BusinessUnitUpdateWithoutAssignmentsInput = {
   ruleSets?: Prisma.RoutingRuleSetUpdateManyWithoutBusinessUnitNestedInput
   recommendations?: Prisma.RoutingRecommendationUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitUncheckedUpdateWithoutAssignmentsInput = {
@@ -711,6 +754,7 @@ export type BusinessUnitUncheckedUpdateWithoutAssignmentsInput = {
   ruleSets?: Prisma.RoutingRuleSetUncheckedUpdateManyWithoutBusinessUnitNestedInput
   recommendations?: Prisma.RoutingRecommendationUncheckedUpdateManyWithoutBusinessUnitNestedInput
   feedbackEvents?: Prisma.FeedbackEventUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUncheckedUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitCreateWithoutFeedbackEventsInput = {
@@ -724,6 +768,7 @@ export type BusinessUnitCreateWithoutFeedbackEventsInput = {
   ruleSets?: Prisma.RoutingRuleSetCreateNestedManyWithoutBusinessUnitInput
   recommendations?: Prisma.RoutingRecommendationCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitUncheckedCreateWithoutFeedbackEventsInput = {
@@ -737,6 +782,7 @@ export type BusinessUnitUncheckedCreateWithoutFeedbackEventsInput = {
   ruleSets?: Prisma.RoutingRuleSetUncheckedCreateNestedManyWithoutBusinessUnitInput
   recommendations?: Prisma.RoutingRecommendationUncheckedCreateNestedManyWithoutBusinessUnitInput
   assignments?: Prisma.AssignmentUncheckedCreateNestedManyWithoutBusinessUnitInput
+  userProfiles?: Prisma.AppUserProfileUncheckedCreateNestedManyWithoutPrimaryBusinessUnitInput
 }
 
 export type BusinessUnitCreateOrConnectWithoutFeedbackEventsInput = {
@@ -766,6 +812,7 @@ export type BusinessUnitUpdateWithoutFeedbackEventsInput = {
   ruleSets?: Prisma.RoutingRuleSetUpdateManyWithoutBusinessUnitNestedInput
   recommendations?: Prisma.RoutingRecommendationUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUpdateManyWithoutPrimaryBusinessUnitNestedInput
 }
 
 export type BusinessUnitUncheckedUpdateWithoutFeedbackEventsInput = {
@@ -779,6 +826,79 @@ export type BusinessUnitUncheckedUpdateWithoutFeedbackEventsInput = {
   ruleSets?: Prisma.RoutingRuleSetUncheckedUpdateManyWithoutBusinessUnitNestedInput
   recommendations?: Prisma.RoutingRecommendationUncheckedUpdateManyWithoutBusinessUnitNestedInput
   assignments?: Prisma.AssignmentUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  userProfiles?: Prisma.AppUserProfileUncheckedUpdateManyWithoutPrimaryBusinessUnitNestedInput
+}
+
+export type BusinessUnitCreateWithoutUserProfilesInput = {
+  id?: string
+  code: string
+  name: string
+  description?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  skus?: Prisma.BuSkuCreateNestedManyWithoutBusinessUnitInput
+  ruleSets?: Prisma.RoutingRuleSetCreateNestedManyWithoutBusinessUnitInput
+  recommendations?: Prisma.RoutingRecommendationCreateNestedManyWithoutBusinessUnitInput
+  assignments?: Prisma.AssignmentCreateNestedManyWithoutBusinessUnitInput
+  feedbackEvents?: Prisma.FeedbackEventCreateNestedManyWithoutBusinessUnitInput
+}
+
+export type BusinessUnitUncheckedCreateWithoutUserProfilesInput = {
+  id?: string
+  code: string
+  name: string
+  description?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  skus?: Prisma.BuSkuUncheckedCreateNestedManyWithoutBusinessUnitInput
+  ruleSets?: Prisma.RoutingRuleSetUncheckedCreateNestedManyWithoutBusinessUnitInput
+  recommendations?: Prisma.RoutingRecommendationUncheckedCreateNestedManyWithoutBusinessUnitInput
+  assignments?: Prisma.AssignmentUncheckedCreateNestedManyWithoutBusinessUnitInput
+  feedbackEvents?: Prisma.FeedbackEventUncheckedCreateNestedManyWithoutBusinessUnitInput
+}
+
+export type BusinessUnitCreateOrConnectWithoutUserProfilesInput = {
+  where: Prisma.BusinessUnitWhereUniqueInput
+  create: Prisma.XOR<Prisma.BusinessUnitCreateWithoutUserProfilesInput, Prisma.BusinessUnitUncheckedCreateWithoutUserProfilesInput>
+}
+
+export type BusinessUnitUpsertWithoutUserProfilesInput = {
+  update: Prisma.XOR<Prisma.BusinessUnitUpdateWithoutUserProfilesInput, Prisma.BusinessUnitUncheckedUpdateWithoutUserProfilesInput>
+  create: Prisma.XOR<Prisma.BusinessUnitCreateWithoutUserProfilesInput, Prisma.BusinessUnitUncheckedCreateWithoutUserProfilesInput>
+  where?: Prisma.BusinessUnitWhereInput
+}
+
+export type BusinessUnitUpdateToOneWithWhereWithoutUserProfilesInput = {
+  where?: Prisma.BusinessUnitWhereInput
+  data: Prisma.XOR<Prisma.BusinessUnitUpdateWithoutUserProfilesInput, Prisma.BusinessUnitUncheckedUpdateWithoutUserProfilesInput>
+}
+
+export type BusinessUnitUpdateWithoutUserProfilesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  skus?: Prisma.BuSkuUpdateManyWithoutBusinessUnitNestedInput
+  ruleSets?: Prisma.RoutingRuleSetUpdateManyWithoutBusinessUnitNestedInput
+  recommendations?: Prisma.RoutingRecommendationUpdateManyWithoutBusinessUnitNestedInput
+  assignments?: Prisma.AssignmentUpdateManyWithoutBusinessUnitNestedInput
+  feedbackEvents?: Prisma.FeedbackEventUpdateManyWithoutBusinessUnitNestedInput
+}
+
+export type BusinessUnitUncheckedUpdateWithoutUserProfilesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  code?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  skus?: Prisma.BuSkuUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  ruleSets?: Prisma.RoutingRuleSetUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  recommendations?: Prisma.RoutingRecommendationUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  assignments?: Prisma.AssignmentUncheckedUpdateManyWithoutBusinessUnitNestedInput
+  feedbackEvents?: Prisma.FeedbackEventUncheckedUpdateManyWithoutBusinessUnitNestedInput
 }
 
 
@@ -792,6 +912,7 @@ export type BusinessUnitCountOutputType = {
   recommendations: number
   assignments: number
   feedbackEvents: number
+  userProfiles: number
 }
 
 export type BusinessUnitCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -800,6 +921,7 @@ export type BusinessUnitCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   recommendations?: boolean | BusinessUnitCountOutputTypeCountRecommendationsArgs
   assignments?: boolean | BusinessUnitCountOutputTypeCountAssignmentsArgs
   feedbackEvents?: boolean | BusinessUnitCountOutputTypeCountFeedbackEventsArgs
+  userProfiles?: boolean | BusinessUnitCountOutputTypeCountUserProfilesArgs
 }
 
 /**
@@ -847,6 +969,13 @@ export type BusinessUnitCountOutputTypeCountFeedbackEventsArgs<ExtArgs extends r
   where?: Prisma.FeedbackEventWhereInput
 }
 
+/**
+ * BusinessUnitCountOutputType without action
+ */
+export type BusinessUnitCountOutputTypeCountUserProfilesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AppUserProfileWhereInput
+}
+
 
 export type BusinessUnitSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -860,6 +989,7 @@ export type BusinessUnitSelect<ExtArgs extends runtime.Types.Extensions.Internal
   recommendations?: boolean | Prisma.BusinessUnit$recommendationsArgs<ExtArgs>
   assignments?: boolean | Prisma.BusinessUnit$assignmentsArgs<ExtArgs>
   feedbackEvents?: boolean | Prisma.BusinessUnit$feedbackEventsArgs<ExtArgs>
+  userProfiles?: boolean | Prisma.BusinessUnit$userProfilesArgs<ExtArgs>
   _count?: boolean | Prisma.BusinessUnitCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["businessUnit"]>
 
@@ -897,6 +1027,7 @@ export type BusinessUnitInclude<ExtArgs extends runtime.Types.Extensions.Interna
   recommendations?: boolean | Prisma.BusinessUnit$recommendationsArgs<ExtArgs>
   assignments?: boolean | Prisma.BusinessUnit$assignmentsArgs<ExtArgs>
   feedbackEvents?: boolean | Prisma.BusinessUnit$feedbackEventsArgs<ExtArgs>
+  userProfiles?: boolean | Prisma.BusinessUnit$userProfilesArgs<ExtArgs>
   _count?: boolean | Prisma.BusinessUnitCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BusinessUnitIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -910,6 +1041,7 @@ export type $BusinessUnitPayload<ExtArgs extends runtime.Types.Extensions.Intern
     recommendations: Prisma.$RoutingRecommendationPayload<ExtArgs>[]
     assignments: Prisma.$AssignmentPayload<ExtArgs>[]
     feedbackEvents: Prisma.$FeedbackEventPayload<ExtArgs>[]
+    userProfiles: Prisma.$AppUserProfilePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1317,6 +1449,7 @@ export interface Prisma__BusinessUnitClient<T, Null = never, ExtArgs extends run
   recommendations<T extends Prisma.BusinessUnit$recommendationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BusinessUnit$recommendationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RoutingRecommendationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   assignments<T extends Prisma.BusinessUnit$assignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BusinessUnit$assignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   feedbackEvents<T extends Prisma.BusinessUnit$feedbackEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BusinessUnit$feedbackEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FeedbackEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  userProfiles<T extends Prisma.BusinessUnit$userProfilesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BusinessUnit$userProfilesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AppUserProfilePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1857,6 +1990,30 @@ export type BusinessUnit$feedbackEventsArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.FeedbackEventScalarFieldEnum | Prisma.FeedbackEventScalarFieldEnum[]
+}
+
+/**
+ * BusinessUnit.userProfiles
+ */
+export type BusinessUnit$userProfilesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AppUserProfile
+   */
+  select?: Prisma.AppUserProfileSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AppUserProfile
+   */
+  omit?: Prisma.AppUserProfileOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AppUserProfileInclude<ExtArgs> | null
+  where?: Prisma.AppUserProfileWhereInput
+  orderBy?: Prisma.AppUserProfileOrderByWithRelationInput | Prisma.AppUserProfileOrderByWithRelationInput[]
+  cursor?: Prisma.AppUserProfileWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AppUserProfileScalarFieldEnum | Prisma.AppUserProfileScalarFieldEnum[]
 }
 
 /**
