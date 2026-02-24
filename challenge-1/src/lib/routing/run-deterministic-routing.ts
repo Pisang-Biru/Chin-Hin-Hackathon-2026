@@ -39,6 +39,16 @@ export type RoutingLiveEvent =
       timestamp: string
     }
   | {
+      type: 'AGENT_TYPING'
+      leadId: string
+      routingRunId: string
+      businessUnitCode: string
+      agentId: string
+      recipientId: string | null
+      messageType: string
+      timestamp: string
+    }
+  | {
       type: 'AGENT_MESSAGE'
       leadId: string
       routingRunId: string
@@ -295,6 +305,18 @@ export async function runDeterministicRoutingForLead(
 
     for (const message of orchestration.agentMessages) {
       await emitRoutingEvent(onEvent, {
+        type: 'AGENT_TYPING',
+        leadId,
+        routingRunId: routingRun.id,
+        businessUnitCode: recommendation.businessUnitCode,
+        agentId: message.agentId,
+        recipientId: message.recipientId,
+        messageType: message.messageType,
+        timestamp: new Date().toISOString(),
+      })
+      await sleep(previewDelayMs)
+
+      await emitRoutingEvent(onEvent, {
         type: 'AGENT_MESSAGE',
         leadId,
         routingRunId: routingRun.id,
@@ -306,7 +328,7 @@ export async function runDeterministicRoutingForLead(
         evidenceRefs: message.evidenceRefs,
         timestamp: new Date().toISOString(),
       })
-      await sleep(previewDelayMs)
+      await sleep(Math.max(Math.floor(previewDelayMs * 0.35), 80))
     }
 
     await emitRoutingEvent(onEvent, {

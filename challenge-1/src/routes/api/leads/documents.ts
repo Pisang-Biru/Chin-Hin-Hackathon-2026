@@ -24,6 +24,11 @@ export const Route = createFileRoute('/api/leads/documents')({
               select: {
                 id: true,
                 currentStatus: true,
+                routingRuns: {
+                  take: 1,
+                  orderBy: { startedAt: 'desc' },
+                  select: { id: true },
+                },
               },
             },
             facts: {
@@ -56,6 +61,10 @@ export const Route = createFileRoute('/api/leads/documents')({
               id: document.id,
               leadId: hasLead ? document.leads[0].id : null,
               leadStatus: hasLead ? document.leads[0].currentStatus : null,
+              latestRoutingRunId:
+                hasLead && document.leads[0].routingRuns.length > 0
+                  ? document.leads[0].routingRuns[0].id
+                  : null,
               fileName: document.fileName,
               mimeType: document.mimeType,
               fileSizeBytes: document.fileSizeBytes,

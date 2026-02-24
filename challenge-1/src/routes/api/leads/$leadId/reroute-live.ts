@@ -5,7 +5,7 @@ import type { RoutingLiveEvent } from '@/lib/routing/run-deterministic-routing'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { sanitizeErrorMessage } from '@/lib/server/json-response'
 
-type PreviewStreamEvent =
+type LiveRoutingEvent =
   | RoutingLiveEvent
   | {
       type: 'PREVIEW_OPENED'
@@ -21,16 +21,12 @@ type PreviewStreamEvent =
       scoredBusinessUnits: number
       timestamp: string
     }
-  | {
-      type: 'HEARTBEAT'
-      timestamp: string
-    }
 
-function formatSseData(payload: PreviewStreamEvent): string {
+function formatSseData(payload: LiveRoutingEvent): string {
   return `data: ${JSON.stringify(payload)}\n\n`
 }
 
-export const Route = createFileRoute('/api/leads/$leadId/swarm-preview')({
+export const Route = createFileRoute('/api/leads/$leadId/reroute-live')({
   server: {
     handlers: {
       GET: async ({ request, params }) => {
@@ -38,42 +34,29 @@ export const Route = createFileRoute('/api/leads/$leadId/swarm-preview')({
         if (authz.response) {
           return authz.response
         }
-
         const principal = authz.principal!
+
         const leadId = params.leadId
         const encoder = new TextEncoder()
 
         const stream = new ReadableStream({
           start(controller) {
             let isClosed = false
-            let heartbeatTimer: ReturnType<typeof setInterval> | null = null
 
-            const send = (payload: PreviewStreamEvent) => {
+            const send = (payload: LiveRoutingEvent) => {
               if (isClosed) {
                 return
               }
-
               controller.enqueue(encoder.encode(formatSseData(payload)))
             }
 
-            const closeStream = () => {
+            const close = () => {
               if (isClosed) {
                 return
               }
-
               isClosed = true
-              if (heartbeatTimer) {
-                clearInterval(heartbeatTimer)
-              }
               controller.close()
             }
-
-            heartbeatTimer = setInterval(() => {
-              send({
-                type: 'HEARTBEAT',
-                timestamp: new Date().toISOString(),
-              })
-            }, 8_000)
 
             send({
               type: 'PREVIEW_OPENED',
@@ -86,7 +69,7 @@ export const Route = createFileRoute('/api/leads/$leadId/swarm-preview')({
                 const summary = await runDeterministicRoutingForLead({
                   leadId,
                   triggeredBy: principal.userId,
-                  previewDelayMs: 350,
+                  previewDelayMs: 260,
                   onEvent: (event) => {
                     send(event)
                   },
@@ -110,7 +93,7 @@ export const Route = createFileRoute('/api/leads/$leadId/swarm-preview')({
                   timestamp: new Date().toISOString(),
                 })
               } finally {
-                closeStream()
+                close()
               }
             })()
           },

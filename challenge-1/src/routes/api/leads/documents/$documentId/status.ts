@@ -51,6 +51,8 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
           return authz.response
         }
 
+        const liveRoutingMode = new URL(request.url).searchParams.get('liveRouting') === '1'
+
         const documentId = params.documentId
         const document = await prisma.leadDocument.findUnique({
           where: { id: documentId },
@@ -179,6 +181,22 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
             | undefined
 
           if (nextStatus === 'NORMALIZED' && leadId) {
+            if (liveRoutingMode) {
+              routing = {
+                status: 'SKIPPED',
+                reason: 'Live routing pending.',
+              }
+
+              return jsonResponse({
+                documentId,
+                leadId,
+                parseStatus: nextStatus,
+                progress: 'succeeded',
+                normalizedFactsCount: facts.length,
+                routing,
+              })
+            }
+
             try {
               const routingSummary = await runDeterministicRoutingForLead({
                 leadId,

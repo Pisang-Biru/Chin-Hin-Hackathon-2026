@@ -21,7 +21,8 @@ import { Route as ApiLeadsDocumentsRouteImport } from './routes/api/leads/docume
 import { Route as ApiBuAssignmentsRouteImport } from './routes/api/bu/assignments'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
-import { Route as ApiLeadsLeadIdSwarmPreviewRouteImport } from './routes/api/leads/$leadId/swarm-preview'
+import { Route as ApiRoutingRunsRoutingRunIdSwarmEventsRouteImport } from './routes/api/routing-runs/$routingRunId/swarm-events'
+import { Route as ApiLeadsLeadIdRerouteLiveRouteImport } from './routes/api/leads/$leadId/reroute-live'
 import { Route as ApiLeadsLeadIdRerouteRouteImport } from './routes/api/leads/$leadId/reroute'
 import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/users/$userId'
 import { Route as ApiSynergyApprovalsAssignmentIdStatusRouteImport } from './routes/api/synergy/approvals/$assignmentId/status'
@@ -90,10 +91,16 @@ const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
   path: '/api/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiLeadsLeadIdSwarmPreviewRoute =
-  ApiLeadsLeadIdSwarmPreviewRouteImport.update({
-    id: '/api/leads/$leadId/swarm-preview',
-    path: '/api/leads/$leadId/swarm-preview',
+const ApiRoutingRunsRoutingRunIdSwarmEventsRoute =
+  ApiRoutingRunsRoutingRunIdSwarmEventsRouteImport.update({
+    id: '/api/routing-runs/$routingRunId/swarm-events',
+    path: '/api/routing-runs/$routingRunId/swarm-events',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiLeadsLeadIdRerouteLiveRoute =
+  ApiLeadsLeadIdRerouteLiveRouteImport.update({
+    id: '/api/leads/$leadId/reroute-live',
+    path: '/api/leads/$leadId/reroute-live',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiLeadsLeadIdRerouteRoute = ApiLeadsLeadIdRerouteRouteImport.update({
@@ -152,7 +159,8 @@ export interface FileRoutesByFullPath {
   '/api/synergy/approvals': typeof ApiSynergyApprovalsRouteWithChildren
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
   '/api/leads/$leadId/reroute': typeof ApiLeadsLeadIdRerouteRoute
-  '/api/leads/$leadId/swarm-preview': typeof ApiLeadsLeadIdSwarmPreviewRoute
+  '/api/leads/$leadId/reroute-live': typeof ApiLeadsLeadIdRerouteLiveRoute
+  '/api/routing-runs/$routingRunId/swarm-events': typeof ApiRoutingRunsRoutingRunIdSwarmEventsRoute
   '/api/assignments/$assignmentId/artifacts/$artifactType': typeof ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute
   '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
@@ -174,7 +182,8 @@ export interface FileRoutesByTo {
   '/api/synergy/approvals': typeof ApiSynergyApprovalsRouteWithChildren
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
   '/api/leads/$leadId/reroute': typeof ApiLeadsLeadIdRerouteRoute
-  '/api/leads/$leadId/swarm-preview': typeof ApiLeadsLeadIdSwarmPreviewRoute
+  '/api/leads/$leadId/reroute-live': typeof ApiLeadsLeadIdRerouteLiveRoute
+  '/api/routing-runs/$routingRunId/swarm-events': typeof ApiRoutingRunsRoutingRunIdSwarmEventsRoute
   '/api/assignments/$assignmentId/artifacts/$artifactType': typeof ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute
   '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
@@ -197,7 +206,8 @@ export interface FileRoutesById {
   '/api/synergy/approvals': typeof ApiSynergyApprovalsRouteWithChildren
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
   '/api/leads/$leadId/reroute': typeof ApiLeadsLeadIdRerouteRoute
-  '/api/leads/$leadId/swarm-preview': typeof ApiLeadsLeadIdSwarmPreviewRoute
+  '/api/leads/$leadId/reroute-live': typeof ApiLeadsLeadIdRerouteLiveRoute
+  '/api/routing-runs/$routingRunId/swarm-events': typeof ApiRoutingRunsRoutingRunIdSwarmEventsRoute
   '/api/assignments/$assignmentId/artifacts/$artifactType': typeof ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute
   '/api/bu/assignments/$assignmentId/status': typeof ApiBuAssignmentsAssignmentIdStatusRoute
   '/api/leads/documents/$documentId/retry': typeof ApiLeadsDocumentsDocumentIdRetryRoute
@@ -221,7 +231,8 @@ export interface FileRouteTypes {
     | '/api/synergy/approvals'
     | '/api/admin/users/$userId'
     | '/api/leads/$leadId/reroute'
-    | '/api/leads/$leadId/swarm-preview'
+    | '/api/leads/$leadId/reroute-live'
+    | '/api/routing-runs/$routingRunId/swarm-events'
     | '/api/assignments/$assignmentId/artifacts/$artifactType'
     | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
@@ -243,7 +254,8 @@ export interface FileRouteTypes {
     | '/api/synergy/approvals'
     | '/api/admin/users/$userId'
     | '/api/leads/$leadId/reroute'
-    | '/api/leads/$leadId/swarm-preview'
+    | '/api/leads/$leadId/reroute-live'
+    | '/api/routing-runs/$routingRunId/swarm-events'
     | '/api/assignments/$assignmentId/artifacts/$artifactType'
     | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
@@ -265,7 +277,8 @@ export interface FileRouteTypes {
     | '/api/synergy/approvals'
     | '/api/admin/users/$userId'
     | '/api/leads/$leadId/reroute'
-    | '/api/leads/$leadId/swarm-preview'
+    | '/api/leads/$leadId/reroute-live'
+    | '/api/routing-runs/$routingRunId/swarm-events'
     | '/api/assignments/$assignmentId/artifacts/$artifactType'
     | '/api/bu/assignments/$assignmentId/status'
     | '/api/leads/documents/$documentId/retry'
@@ -287,7 +300,8 @@ export interface RootRouteChildren {
   ApiLeadsUploadRoute: typeof ApiLeadsUploadRoute
   ApiSynergyApprovalsRoute: typeof ApiSynergyApprovalsRouteWithChildren
   ApiLeadsLeadIdRerouteRoute: typeof ApiLeadsLeadIdRerouteRoute
-  ApiLeadsLeadIdSwarmPreviewRoute: typeof ApiLeadsLeadIdSwarmPreviewRoute
+  ApiLeadsLeadIdRerouteLiveRoute: typeof ApiLeadsLeadIdRerouteLiveRoute
+  ApiRoutingRunsRoutingRunIdSwarmEventsRoute: typeof ApiRoutingRunsRoutingRunIdSwarmEventsRoute
   ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute: typeof ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute
 }
 
@@ -377,11 +391,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/leads/$leadId/swarm-preview': {
-      id: '/api/leads/$leadId/swarm-preview'
-      path: '/api/leads/$leadId/swarm-preview'
-      fullPath: '/api/leads/$leadId/swarm-preview'
-      preLoaderRoute: typeof ApiLeadsLeadIdSwarmPreviewRouteImport
+    '/api/routing-runs/$routingRunId/swarm-events': {
+      id: '/api/routing-runs/$routingRunId/swarm-events'
+      path: '/api/routing-runs/$routingRunId/swarm-events'
+      fullPath: '/api/routing-runs/$routingRunId/swarm-events'
+      preLoaderRoute: typeof ApiRoutingRunsRoutingRunIdSwarmEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/leads/$leadId/reroute-live': {
+      id: '/api/leads/$leadId/reroute-live'
+      path: '/api/leads/$leadId/reroute-live'
+      fullPath: '/api/leads/$leadId/reroute-live'
+      preLoaderRoute: typeof ApiLeadsLeadIdRerouteLiveRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/leads/$leadId/reroute': {
@@ -500,7 +521,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLeadsUploadRoute: ApiLeadsUploadRoute,
   ApiSynergyApprovalsRoute: ApiSynergyApprovalsRouteWithChildren,
   ApiLeadsLeadIdRerouteRoute: ApiLeadsLeadIdRerouteRoute,
-  ApiLeadsLeadIdSwarmPreviewRoute: ApiLeadsLeadIdSwarmPreviewRoute,
+  ApiLeadsLeadIdRerouteLiveRoute: ApiLeadsLeadIdRerouteLiveRoute,
+  ApiRoutingRunsRoutingRunIdSwarmEventsRoute:
+    ApiRoutingRunsRoutingRunIdSwarmEventsRoute,
   ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute:
     ApiAssignmentsAssignmentIdArtifactsArtifactTypeRoute,
 }

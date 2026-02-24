@@ -2,6 +2,7 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { authClient } from '@/lib/auth-client'
+import { getAgentAvatar } from '@/lib/swarm/agent-avatar'
 
 type ApprovalStatus = 'APPROVED' | 'DISPATCHED' | 'CANCELED' | 'ALL'
 
@@ -67,14 +68,7 @@ export const Route = createFileRoute('/synergy/approvals')({
 })
 
 function toAgentLabel(agentId: string): string {
-  if (agentId === 'synergy_router' || agentId === 'synergy_deterministic_router') {
-    return 'Synergy Agent'
-  }
-
-  return agentId
-    .replace(/_agent$/, '')
-    .replaceAll('_', ' ')
-    .toUpperCase()
+  return getAgentAvatar(agentId).label
 }
 
 function SynergyApprovalsPage() {
@@ -274,10 +268,27 @@ function SynergyApprovalsPage() {
                               key={message.id}
                               className="rounded border border-slate-700 bg-slate-800 px-2 py-1"
                             >
-                              <p className="text-[11px] text-cyan-200">
-                                {toAgentLabel(message.agentId)}
-                                {message.recipientId ? ` -> ${toAgentLabel(message.recipientId)}` : ''}
-                              </p>
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={getAgentAvatar(message.agentId).imagePath}
+                                  alt={toAgentLabel(message.agentId)}
+                                  className="h-7 w-7 rounded-md border border-slate-600"
+                                />
+                                {message.recipientId ? (
+                                  <>
+                                    <span className="text-slate-400">{'->'}</span>
+                                    <img
+                                      src={getAgentAvatar(message.recipientId).imagePath}
+                                      alt={toAgentLabel(message.recipientId)}
+                                      className="h-7 w-7 rounded-md border border-slate-600"
+                                    />
+                                  </>
+                                ) : null}
+                                <p className="text-[11px] text-cyan-200">
+                                  {toAgentLabel(message.agentId)}
+                                  {message.recipientId ? ` -> ${toAgentLabel(message.recipientId)}` : ''}
+                                </p>
+                              </div>
                               <p className="text-[11px] text-slate-300">
                                 {new Date(message.createdAt).toLocaleString()} | {message.messageType}
                               </p>

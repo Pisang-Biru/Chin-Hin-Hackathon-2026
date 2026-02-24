@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Starken Drymix">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="18" fill="url(#g)"/>
+  <text x="64" y="74" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" fill="#ffffff" font-weight="700">DRY</text>
+</svg>
