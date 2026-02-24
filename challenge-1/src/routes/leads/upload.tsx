@@ -187,7 +187,12 @@ export const Route = createFileRoute('/leads/upload')({
 })
 
 // Upload Zone Component
-function UploadZone({ file, setFile, isUploading, onUpload }: {
+function UploadZone({
+  file,
+  setFile,
+  isUploading,
+  onUpload,
+}: {
   file: File | null
   setFile: (file: File | null) => void
   isUploading: boolean
@@ -198,9 +203,12 @@ function UploadZone({ file, setFile, isUploading, onUpload }: {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    const droppedFile = e.dataTransfer.files[0]
-    if (droppedFile && (droppedFile.type === 'application/pdf' ||
-        droppedFile.type.startsWith('image/'))) {
+    const droppedFile = e.dataTransfer.files.item(0)
+    if (
+      droppedFile &&
+      (droppedFile.type === 'application/pdf' ||
+        droppedFile.type.startsWith('image/'))
+    ) {
       setFile(droppedFile)
     }
   }
@@ -217,8 +225,18 @@ function UploadZone({ file, setFile, isUploading, onUpload }: {
   return (
     <div className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/60 backdrop-blur-sm p-5 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-2xl hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-200">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-900 dark:text-white">
-        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        <svg
+          className="w-5 h-5 text-blue-600 dark:text-blue-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          />
         </svg>
         Upload Document
       </h3>
@@ -230,11 +248,13 @@ function UploadZone({ file, setFile, isUploading, onUpload }: {
           onDragLeave={handleDragLeave}
           className={`
             relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200
-            ${isDragging
-              ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-900/20'
-              : file
-                ? 'border-emerald-500/50 bg-emerald-500/5 hover:border-emerald-500/70'
-                : 'border-slate-300 dark:border-slate-600/50 hover:border-slate-400 dark:hover:border-slate-500/50 hover:bg-slate-100 dark:hover:bg-slate-700/30'}
+            ${
+              isDragging
+                ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-900/20'
+                : file
+                  ? 'border-emerald-500/50 bg-emerald-500/5 hover:border-emerald-500/70'
+                  : 'border-slate-300 dark:border-slate-600/50 hover:border-slate-400 dark:hover:border-slate-500/50 hover:bg-slate-100 dark:hover:bg-slate-700/30'
+            }
           `}
         >
           <input
@@ -248,24 +268,50 @@ function UploadZone({ file, setFile, isUploading, onUpload }: {
           {file ? (
             <div className="space-y-3">
               <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center mx-auto">
-                <svg className="w-7 h-7 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-7 h-7 text-emerald-600 dark:text-emerald-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">{file.name}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-500">{formatBytes(file.size)}</p>
+              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                {file.name}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-500">
+                {formatBytes(file.size)}
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600/50 flex items-center justify-center mx-auto">
-                <svg className="w-7 h-7 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                <svg
+                  className="w-7 h-7 text-slate-500 dark:text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                  />
                 </svg>
               </div>
               <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
                 Drag & drop PDF or image
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-500">or click to browse</p>
+              <p className="text-xs text-slate-500 dark:text-slate-500">
+                or click to browse
+              </p>
             </div>
           )}
         </div>
@@ -282,8 +328,18 @@ function UploadZone({ file, setFile, isUploading, onUpload }: {
             </>
           ) : (
             <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                />
               </svg>
               Upload & Start Extraction
             </>
@@ -295,7 +351,13 @@ function UploadZone({ file, setFile, isUploading, onUpload }: {
 }
 
 // File Summary Card Component
-function FileSummary({ status, canRetry, onRetry, onStartPreview, isPreviewing }: {
+function FileSummary({
+  status,
+  canRetry,
+  onRetry,
+  onStartPreview,
+  isPreviewing,
+}: {
   status: StatusResponse | null
   canRetry: boolean
   onRetry: () => void
@@ -321,17 +383,37 @@ function FileSummary({ status, canRetry, onRetry, onStartPreview, isPreviewing }
 
   if (!status) {
     return (
-      <div className="rounded-2xl border border-slate-700/50 bg-slate-800/60 backdrop-blur-sm p-5 shadow-xl shadow-slate-900/50 h-full flex flex-col justify-center">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
-          <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-sm p-5 shadow-lg shadow-slate-200/60 h-full flex flex-col justify-center">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-900">
+          <svg
+            className="w-5 h-5 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
           </svg>
           Latest File Summary
         </h3>
         <div className="flex flex-col items-center justify-center py-8 text-slate-500">
-          <div className="w-16 h-16 rounded-2xl bg-slate-700/50 border border-slate-600/50 flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+          <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mb-4">
+            <svg
+              className="w-8 h-8 opacity-50"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"
+              />
             </svg>
           </div>
           <p className="text-sm">Upload a file to see its status</p>
@@ -341,10 +423,20 @@ function FileSummary({ status, canRetry, onRetry, onStartPreview, isPreviewing }
   }
 
   return (
-    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/60 backdrop-blur-sm p-5 shadow-xl shadow-slate-900/50 hover:shadow-2xl hover:shadow-slate-900/60 transition-all duration-200">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
-        <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-sm p-5 shadow-lg shadow-slate-200/60 hover:shadow-xl hover:shadow-slate-200/70 transition-all duration-200">
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-900">
+        <svg
+          className="w-5 h-5 text-blue-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
         </svg>
         Latest File Summary
       </h3>
@@ -352,46 +444,66 @@ function FileSummary({ status, canRetry, onRetry, onStartPreview, isPreviewing }
       <div className="space-y-4">
         {/* Status Badge */}
         <div className="flex items-center gap-2">
-          <span className={`h-2 w-2 rounded-full ${getStatusColor(status.parseStatus)} ${status.parseStatus === 'ANALYZING' ? 'animate-pulse' : ''}`} />
-          <span className="text-sm font-medium text-white">{statusLabel}</span>
+          <span
+            className={`h-2 w-2 rounded-full ${getStatusColor(status.parseStatus)} ${status.parseStatus === 'ANALYZING' ? 'animate-pulse' : ''}`}
+          />
+          <span className="text-sm font-medium text-slate-800">
+            {statusLabel}
+          </span>
         </div>
 
         {/* Details Grid */}
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-3">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
             <p className="text-slate-500 text-xs mb-1">Document ID</p>
-            <p className="font-mono text-xs text-slate-300 truncate">{status.documentId.slice(0, 12)}...</p>
+            <p className="font-mono text-xs text-slate-700 truncate">
+              {status.documentId.slice(0, 12)}...
+            </p>
           </div>
           {status.leadId && (
-            <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-3">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-slate-500 text-xs mb-1">Lead ID</p>
-              <p className="font-mono text-xs text-slate-300 truncate">{status.leadId.slice(0, 12)}...</p>
+              <p className="font-mono text-xs text-slate-700 truncate">
+                {status.leadId.slice(0, 12)}...
+              </p>
             </div>
           )}
           {typeof status.normalizedFactsCount === 'number' && (
-            <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-3">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-slate-500 text-xs mb-1">Normalized Facts</p>
-              <p className="text-lg font-semibold text-blue-400">{status.normalizedFactsCount}</p>
+              <p className="text-lg font-semibold text-blue-600">
+                {status.normalizedFactsCount}
+              </p>
             </div>
           )}
           {status.routing?.recommendationsCount !== undefined && (
-            <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-3">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
               <p className="text-slate-500 text-xs mb-1">Recommendations</p>
-              <p className="text-lg font-semibold text-emerald-400">{status.routing.recommendationsCount}</p>
+              <p className="text-lg font-semibold text-emerald-600">
+                {status.routing.recommendationsCount}
+              </p>
             </div>
           )}
         </div>
 
         {/* Routing Status */}
         {status.routing && (
-          <div className="rounded-xl border border-slate-700/50 bg-slate-900/60 p-3">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
             <p className="text-slate-500 text-xs mb-1">Routing Status</p>
             <p className="text-sm flex items-center gap-2">
-              <span className={status.routing.status === 'COMPLETED' ? 'text-emerald-400' : 'text-slate-300'}>
+              <span
+                className={
+                  status.routing.status === 'COMPLETED'
+                    ? 'text-emerald-600'
+                    : 'text-slate-700'
+                }
+              >
                 {status.routing.status}
               </span>
               {status.routing.assignmentCount !== undefined && (
-                <span className="text-slate-600">| {status.routing.assignmentCount} assignments</span>
+                <span className="text-slate-600">
+                  | {status.routing.assignmentCount} assignments
+                </span>
               )}
             </p>
           </div>
@@ -400,7 +512,7 @@ function FileSummary({ status, canRetry, onRetry, onStartPreview, isPreviewing }
         {/* Errors */}
         {status.errors?.length > 0 && (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3">
-            <p className="text-red-300 text-xs">{status.errors.join(' | ')}</p>
+            <p className="text-red-700 text-xs">{status.errors.join(' | ')}</p>
           </div>
         )}
 
@@ -412,9 +524,24 @@ function FileSummary({ status, canRetry, onRetry, onStartPreview, isPreviewing }
               disabled={isPreviewing}
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-3 py-2.5 text-sm font-medium text-white shadow-md shadow-indigo-900/20 hover:bg-indigo-500 hover:shadow-lg hover:shadow-indigo-900/30 active:translate-y-px active:shadow-sm disabled:opacity-50 transition-all duration-200"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               {isPreviewing ? 'Preview Running...' : 'Live Swarm Preview'}
             </button>
@@ -434,7 +561,13 @@ function FileSummary({ status, canRetry, onRetry, onStartPreview, isPreviewing }
 }
 
 // File History Table Component
-function FileHistory({ documents, isLoading, error, onRefresh, onReplay }: {
+function FileHistory({
+  documents,
+  isLoading,
+  error,
+  onRefresh,
+  onReplay,
+}: {
   documents: LeadDocumentListItem[]
   isLoading: boolean
   error: string | null
@@ -442,35 +575,55 @@ function FileHistory({ documents, isLoading, error, onRefresh, onReplay }: {
   onReplay: (routingRunId: string) => void
 }) {
   return (
-    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/60 backdrop-blur-sm p-5 shadow-xl shadow-slate-900/50">
+    <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-sm p-5 shadow-lg shadow-slate-200/60">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
-          <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <h3 className="text-lg font-semibold flex items-center gap-2 text-slate-900">
+          <svg
+            className="w-5 h-5 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           File History
         </h3>
         <button
           onClick={onRefresh}
           disabled={isLoading}
-          className="p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-400 hover:text-white disabled:opacity-50 transition-all duration-150"
+          className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 disabled:opacity-50 transition-all duration-150"
         >
-          <svg className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          <svg
+            className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
           </svg>
         </button>
       </div>
 
       {error && (
         <div className="flex items-center gap-3 p-3 rounded-xl border border-red-500/30 bg-red-500/10 mb-4">
-          <span className="text-red-300 text-sm">{error}</span>
+          <span className="text-red-700 text-sm">{error}</span>
         </div>
       )}
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-700/50 text-left text-slate-400 text-xs uppercase tracking-wider">
+            <tr className="border-b border-slate-200 text-left text-slate-500 text-xs uppercase tracking-wider">
               <th className="pb-3 pr-4 font-medium">File Name</th>
               <th className="pb-3 pr-4 font-medium">Status</th>
               <th className="pb-3 pr-4 font-medium">Facts</th>
@@ -478,35 +631,68 @@ function FileHistory({ documents, isLoading, error, onRefresh, onReplay }: {
               <th className="pb-3 font-medium">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-700/30">
+          <tbody className="divide-y divide-slate-200">
             {documents.map((doc) => (
-              <tr key={doc.id} className="hover:bg-slate-700/30 transition-colors duration-150">
+              <tr
+                key={doc.id}
+                className="hover:bg-slate-50 transition-colors duration-150"
+              >
                 <td className="py-3 pr-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-700/50 border border-slate-600/50 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center">
+                      <svg
+                        className="w-5 h-5 text-slate-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium text-white">{doc.fileName}</p>
-                      <p className="text-xs text-slate-500">{formatBytes(doc.fileSizeBytes)}</p>
+                      <p className="font-medium text-slate-900">
+                        {doc.fileName}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {formatBytes(doc.fileSizeBytes)}
+                      </p>
                     </div>
                   </div>
                 </td>
                 <td className="py-3 pr-4">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
-                    ${doc.parseStatus === 'NORMALIZED' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' :
-                      doc.parseStatus === 'ANALYZING' ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' :
-                      doc.parseStatus === 'FAILED' ? 'bg-red-500/10 border-red-500/30 text-red-300' :
-                      doc.parseStatus === 'EXTRACTED' ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' :
-                      'bg-slate-500/10 border-slate-500/30 text-slate-300'}`}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${getStatusColor(doc.parseStatus)} ${doc.parseStatus === 'ANALYZING' ? 'animate-pulse' : ''}`} />
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
+                    ${
+                      doc.parseStatus === 'NORMALIZED'
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700'
+                        : doc.parseStatus === 'ANALYZING'
+                          ? 'bg-amber-500/10 border-amber-500/30 text-amber-700'
+                          : doc.parseStatus === 'FAILED'
+                            ? 'bg-red-500/10 border-red-500/30 text-red-700'
+                            : doc.parseStatus === 'EXTRACTED'
+                              ? 'bg-blue-500/10 border-blue-500/30 text-blue-700'
+                              : 'bg-slate-500/10 border-slate-500/30 text-slate-700'
+                    }`}
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${getStatusColor(doc.parseStatus)} ${doc.parseStatus === 'ANALYZING' ? 'animate-pulse' : ''}`}
+                    />
                     {doc.parseStatus}
                   </span>
                 </td>
                 <td className="py-3 pr-4">
-                  <span className={doc.normalizedFactsCount > 0 ? 'text-blue-400 font-medium' : 'text-slate-600'}>
+                  <span
+                    className={
+                      doc.normalizedFactsCount > 0
+                        ? 'text-blue-400 font-medium'
+                        : 'text-slate-600'
+                    }
+                  >
                     {doc.normalizedFactsCount}
                   </span>
                 </td>
@@ -517,11 +703,26 @@ function FileHistory({ documents, isLoading, error, onRefresh, onReplay }: {
                   {doc.latestRoutingRunId ? (
                     <button
                       onClick={() => onReplay(doc.latestRoutingRunId)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30 hover:bg-indigo-500/20 text-indigo-300 text-xs font-medium transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-medium transition-colors"
                     >
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                       Replay Swarm
                     </button>
@@ -535,12 +736,24 @@ function FileHistory({ documents, isLoading, error, onRefresh, onReplay }: {
               <tr>
                 <td colSpan={5} className="py-12 text-center">
                   <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 rounded-2xl bg-slate-800/60 border border-slate-700/50 flex items-center justify-center mb-4">
-                      <svg className="w-8 h-8 text-slate-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                    <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mb-4">
+                      <svg
+                        className="w-8 h-8 text-slate-600 opacity-50"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z"
+                        />
                       </svg>
                     </div>
-                    <p className="text-slate-500 text-sm">No documents uploaded yet</p>
+                    <p className="text-slate-500 text-sm">
+                      No documents uploaded yet
+                    </p>
                   </div>
                 </td>
               </tr>
@@ -563,7 +776,7 @@ function SwarmChatPanel({
   leadId,
   routingRunId,
   typingAgents,
-  onStop
+  onStop,
 }: {
   events: SwarmPreviewEvent[]
   isPreviewing: boolean
@@ -583,27 +796,54 @@ function SwarmChatPanel({
   }, [events])
 
   return (
-    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/60 backdrop-blur-sm shadow-xl shadow-slate-900/50 flex flex-col h-full min-h-[600px]">
+    <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-sm shadow-lg shadow-slate-200/60 flex flex-col h-full min-h-[600px]">
       {/* Header */}
-      <div className="p-4 border-b border-slate-700/50">
+      <div className="p-4 border-b border-slate-200">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
-              <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+            <h3 className="text-lg font-semibold flex items-center gap-2 text-slate-900">
+              <svg
+                className="w-5 h-5 text-indigo-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
+                />
               </svg>
               Swarm Live Chat
             </h3>
-            <p className="text-xs text-slate-500 mt-1">Real-time AI agent conversations</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Real-time AI agent conversations
+            </p>
           </div>
           {isPreviewing && (
             <button
               onClick={onStop}
-              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 transition-colors"
+              className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-700 transition-colors"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 10h.01M15 10h.01M12 14h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 10h.01M15 10h.01M12 14h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </button>
           )}
@@ -613,13 +853,19 @@ function SwarmChatPanel({
         {(leadId || routingRunId) && (
           <div className="mt-3 flex flex-wrap gap-2 text-xs">
             {leadId && (
-              <span className="px-2.5 py-1 rounded-lg bg-slate-700/50 border border-slate-600/50 text-slate-400">
-                Lead: <span className="font-mono text-blue-400">{leadId.slice(0, 8)}...</span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600">
+                Lead:{' '}
+                <span className="font-mono text-blue-700">
+                  {leadId.slice(0, 8)}...
+                </span>
               </span>
             )}
             {routingRunId && (
-              <span className="px-2.5 py-1 rounded-lg bg-slate-700/50 border border-slate-600/50 text-slate-400">
-                Run: <span className="font-mono text-indigo-400">{routingRunId.slice(0, 8)}...</span>
+              <span className="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-slate-600">
+                Run:{' '}
+                <span className="font-mono text-indigo-700">
+                  {routingRunId.slice(0, 8)}...
+                </span>
               </span>
             )}
           </div>
@@ -632,13 +878,15 @@ function SwarmChatPanel({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
-              <p className="text-xs text-blue-200">
-                {workingText}{'.'.repeat(dots)}
+              <p className="text-xs text-blue-700">
+                {workingText}
+                {'.'.repeat(dots)}
               </p>
             </div>
             {lastActivityAt && (
-              <p className="text-xs text-blue-200/70">
-                {Math.max(0, Math.floor((Date.now() - lastActivityAt) / 1000))}s ago
+              <p className="text-xs text-blue-700/70">
+                {Math.max(0, Math.floor((Date.now() - lastActivityAt) / 1000))}s
+                ago
               </p>
             )}
           </div>
@@ -647,7 +895,7 @@ function SwarmChatPanel({
 
       {error && (
         <div className="px-4 py-3 bg-red-500/10 border-b border-red-500/20">
-          <p className="text-xs text-red-300">{error}</p>
+          <p className="text-xs text-red-700">{error}</p>
         </div>
       )}
 
@@ -655,13 +903,25 @@ function SwarmChatPanel({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {events.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-slate-500">
-            <div className="w-16 h-16 rounded-2xl bg-slate-700/50 border border-slate-600/50 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center mb-4">
+              <svg
+                className="w-8 h-8 opacity-50"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
               </svg>
             </div>
             <p className="text-sm">
-              {isPreviewing ? 'Waiting for swarm messages...' : 'Start a preview to see the conversation'}
+              {isPreviewing
+                ? 'Waiting for swarm messages...'
+                : 'Start a preview to see the conversation'}
             </p>
           </div>
         ) : (
@@ -689,25 +949,33 @@ function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
   const getLabel = getAgentLabel
 
   if (event.type === 'AGENT_MESSAGE') {
-    const isSynergy = event.agentId === 'synergy_router' || event.agentId === 'synergy_deterministic_router'
+    const isSynergy =
+      event.agentId === 'synergy_router' ||
+      event.agentId === 'synergy_deterministic_router'
 
     return (
-      <div className={`flex items-start gap-3 ${isSynergy ? 'flex-row-reverse' : ''}`}>
+      <div
+        className={`flex items-start gap-3 ${isSynergy ? 'flex-row-reverse' : ''}`}
+      >
         <img
           src={getAvatar(event.agentId).imagePath}
           alt={getLabel(event.agentId)}
-          className="w-8 h-8 rounded-lg border border-slate-600/50"
+          className="w-8 h-8 rounded-lg border border-slate-200"
         />
-        <div className={`max-w-[80%] ${isSynergy ? 'items-end' : 'items-start'}`}>
+        <div
+          className={`max-w-[80%] ${isSynergy ? 'items-end' : 'items-start'}`}
+        >
           <p className="text-xs text-slate-500 mb-1">
             {getLabel(event.agentId)}
             {event.recipientId && <span> → {getLabel(event.recipientId)}</span>}
           </p>
-          <div className={`rounded-xl px-4 py-2.5 text-sm ${
-            isSynergy
-              ? 'bg-blue-600/20 border border-blue-500/40 text-blue-100'
-              : 'bg-slate-700/50 border border-slate-600/50 text-slate-200'
-          }`}>
+          <div
+            className={`rounded-xl px-4 py-2.5 text-sm ${
+              isSynergy
+                ? 'bg-blue-50 border border-blue-200 text-blue-900'
+                : 'bg-slate-100 border border-slate-200 text-slate-800'
+            }`}
+          >
             <p className="leading-relaxed">{event.content}</p>
           </div>
           <p className="text-[10px] text-slate-600 mt-1">
@@ -721,11 +989,22 @@ function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
   if (event.type === 'RECOMMENDATION_SELECTED') {
     return (
       <div className="flex justify-center">
-        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs shadow-sm shadow-emerald-900/10">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-xs shadow-sm shadow-emerald-900/10">
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
-          {event.businessUnitCode} selected • Score: {event.finalScore.toFixed(3)}
+          {event.businessUnitCode} selected • Score:{' '}
+          {event.finalScore.toFixed(3)}
         </span>
       </div>
     )
@@ -735,21 +1014,30 @@ function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
     return (
       <div className="flex items-start gap-3">
         <img
-          src={getAvatar(`${event.businessUnitCode.toLowerCase()}_agent`).imagePath}
+          src={
+            getAvatar(`${event.businessUnitCode.toLowerCase()}_agent`).imagePath
+          }
           alt={event.businessUnitCode}
-          className="w-8 h-8 rounded-lg border border-slate-600/50"
+          className="w-8 h-8 rounded-lg border border-slate-200"
         />
         <div className="max-w-[80%]">
-          <p className="text-xs text-slate-500 mb-1">{event.businessUnitCode} SKU Proposals</p>
+          <p className="text-xs text-slate-500 mb-1">
+            {event.businessUnitCode} SKU Proposals
+          </p>
           <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-2.5 shadow-sm shadow-amber-900/10">
-            <ul className="space-y-1.5 text-sm text-amber-100">
+            <ul className="space-y-1.5 text-sm text-amber-800">
               {event.proposals.map((p) => (
-                <li key={`${event.businessUnitCode}-${p.buSkuId}`} className="flex items-center gap-2">
+                <li
+                  key={`${event.businessUnitCode}-${p.buSkuId}`}
+                  className="flex items-center gap-2"
+                >
                   <span className="w-5 h-5 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-xs font-medium">
                     {p.rank}
                   </span>
                   <span className="font-medium">{p.buSkuId}</span>
-                  <span className="text-amber-200/60 text-xs">({p.confidence.toFixed(3)})</span>
+                  <span className="text-amber-700/70 text-xs">
+                    ({p.confidence.toFixed(3)})
+                  </span>
                 </li>
               ))}
             </ul>
@@ -762,11 +1050,22 @@ function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
   if (event.type === 'ROUTING_COMPLETED') {
     return (
       <div className="flex justify-center">
-        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-sm font-medium shadow-sm shadow-emerald-900/10">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-700 text-sm font-medium shadow-sm shadow-emerald-900/10">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
-          Routing Complete • {event.recommendationsCount} recommendations • {event.assignmentCount} assignments
+          Routing Complete • {event.recommendationsCount} recommendations •{' '}
+          {event.assignmentCount} assignments
         </span>
       </div>
     )
@@ -775,9 +1074,19 @@ function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
   if (event.type === 'ROUTING_FAILED') {
     return (
       <div className="flex justify-center">
-        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500/40 text-red-300 text-sm font-medium shadow-sm shadow-red-900/10">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-500/40 text-red-700 text-sm font-medium shadow-sm shadow-red-900/10">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           Routing Failed: {event.error}
         </span>
@@ -791,22 +1100,38 @@ function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
 // Typing Indicator Component
 function TypingIndicator({ agentId }: { agentId: string }) {
   const avatar = getAgentAvatar(agentId)
-  const isSynergy = agentId === 'synergy_router' || agentId === 'synergy_deterministic_router'
+  const isSynergy =
+    agentId === 'synergy_router' || agentId === 'synergy_deterministic_router'
 
   return (
-    <div className={`flex items-start gap-3 ${isSynergy ? 'flex-row-reverse' : ''}`}>
+    <div
+      className={`flex items-start gap-3 ${isSynergy ? 'flex-row-reverse' : ''}`}
+    >
       <img
         src={avatar.imagePath}
         alt={avatar.label}
-        className="w-8 h-8 rounded-lg border border-slate-600/50 opacity-60"
+        className="w-8 h-8 rounded-lg border border-slate-200 opacity-60"
       />
-      <div className={`rounded-xl px-4 py-3 shadow-sm ${
-        isSynergy ? 'bg-blue-600/10 border border-blue-500/30' : 'bg-slate-700/30 border border-slate-600/30'
-      }`}>
+      <div
+        className={`rounded-xl px-4 py-3 shadow-sm ${
+          isSynergy
+            ? 'bg-blue-600/10 border border-blue-500/30'
+            : 'bg-slate-100 border border-slate-200'
+        }`}
+      >
         <div className="flex gap-1">
-          <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-          <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-          <span className="w-2 h-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+          <span
+            className="w-2 h-2 rounded-full bg-slate-400 animate-bounce"
+            style={{ animationDelay: '0ms' }}
+          />
+          <span
+            className="w-2 h-2 rounded-full bg-slate-400 animate-bounce"
+            style={{ animationDelay: '150ms' }}
+          />
+          <span
+            className="w-2 h-2 rounded-full bg-slate-400 animate-bounce"
+            style={{ animationDelay: '300ms' }}
+          />
         </div>
       </div>
     </div>
@@ -827,13 +1152,23 @@ function LeadsUploadPage() {
   const [isDocumentsLoading, setIsDocumentsLoading] = useState(false)
   const [documentsError, setDocumentsError] = useState<string | null>(null)
   const [isLivePreviewing, setIsLivePreviewing] = useState(false)
-  const [livePreviewLeadId, setLivePreviewLeadId] = useState<string | null>(null)
-  const [livePreviewRoutingRunId, setLivePreviewRoutingRunId] = useState<string | null>(null)
+  const [livePreviewLeadId, setLivePreviewLeadId] = useState<string | null>(
+    null,
+  )
+  const [livePreviewRoutingRunId, setLivePreviewRoutingRunId] = useState<
+    string | null
+  >(null)
   const [livePreviewError, setLivePreviewError] = useState<string | null>(null)
-  const [livePreviewEvents, setLivePreviewEvents] = useState<SwarmPreviewEvent[]>([])
+  const [livePreviewEvents, setLivePreviewEvents] = useState<
+    SwarmPreviewEvent[]
+  >([])
   const [typingAgentIds, setTypingAgentIds] = useState<string[]>([])
-  const [livePreviewWorkingText, setLivePreviewWorkingText] = useState('Waiting for swarm updates')
-  const [livePreviewLastActivityAt, setLivePreviewLastActivityAt] = useState<number | null>(null)
+  const [livePreviewWorkingText, setLivePreviewWorkingText] = useState(
+    'Waiting for swarm updates',
+  )
+  const [livePreviewLastActivityAt, setLivePreviewLastActivityAt] = useState<
+    number | null
+  >(null)
   const [livePreviewDots, setLivePreviewDots] = useState(1)
 
   const pollStartRef = useRef<number | null>(null)
@@ -848,7 +1183,9 @@ function LeadsUploadPage() {
 
     try {
       const response = await fetch('/api/leads/documents')
-      const payload = (await response.json()) as LeadDocumentsResponse & { error?: string }
+      const payload = (await response.json()) as LeadDocumentsResponse & {
+        error?: string
+      }
 
       if (!response.ok) {
         setDocumentsError(payload.error || 'Failed to load documents')
@@ -857,7 +1194,9 @@ function LeadsUploadPage() {
 
       setDocuments(payload.documents)
     } catch (error) {
-      setDocumentsError(error instanceof Error ? error.message : 'Failed to load documents')
+      setDocumentsError(
+        error instanceof Error ? error.message : 'Failed to load documents',
+      )
     } finally {
       setIsDocumentsLoading(false)
     }
@@ -891,7 +1230,9 @@ function LeadsUploadPage() {
       }
 
       if (!response.ok) {
-        setUploadError(payload.error || payload.errors?.join(', ') || 'Upload failed')
+        setUploadError(
+          payload.error || payload.errors?.join(', ') || 'Upload failed',
+        )
         return
       }
 
@@ -914,8 +1255,12 @@ function LeadsUploadPage() {
   }
 
   async function pollStatus(documentId: string) {
-    const response = await fetch(`/api/leads/documents/${documentId}/status?liveRouting=1`)
-    const payload = (await response.json()) as StatusResponse & { error?: string }
+    const response = await fetch(
+      `/api/leads/documents/${documentId}/status?liveRouting=1`,
+    )
+    const payload = (await response.json()) as StatusResponse & {
+      error?: string
+    }
 
     if (!response.ok) {
       throw new Error(payload.error || 'Status polling failed')
@@ -936,7 +1281,9 @@ function LeadsUploadPage() {
     const elapsed = Date.now() - (pollStartRef.current || Date.now())
     if (elapsed >= 120_000) {
       setPolling(false)
-      setUploadError('Polling stopped after 120 seconds. You can refresh status manually.')
+      setUploadError(
+        'Polling stopped after 120 seconds. You can refresh status manually.',
+      )
     }
   }
 
@@ -945,9 +1292,12 @@ function LeadsUploadPage() {
 
     setUploadError(null)
 
-    const response = await fetch(`/api/leads/documents/${status.documentId}/retry`, {
-      method: 'POST',
-    })
+    const response = await fetch(
+      `/api/leads/documents/${status.documentId}/retry`,
+      {
+        method: 'POST',
+      },
+    )
 
     const payload = (await response.json()) as {
       parseStatus?: string
@@ -996,17 +1346,23 @@ function LeadsUploadPage() {
     }
 
     if (event.type === 'ROUTING_STARTED') {
-      setLivePreviewWorkingText('Evaluating routing rules and preparing BU handoff')
+      setLivePreviewWorkingText(
+        'Evaluating routing rules and preparing BU handoff',
+      )
       return
     }
 
     if (event.type === 'RECOMMENDATION_SELECTED') {
-      setLivePreviewWorkingText(`Delegating ${event.businessUnitCode} agent review`)
+      setLivePreviewWorkingText(
+        `Delegating ${event.businessUnitCode} agent review`,
+      )
       return
     }
 
     if (event.type === 'AGENT_MESSAGE') {
-      setLivePreviewWorkingText(`${getAgentLabel(event.agentId)} sent an update`)
+      setLivePreviewWorkingText(
+        `${getAgentLabel(event.agentId)} sent an update`,
+      )
       return
     }
 
@@ -1039,7 +1395,9 @@ function LeadsUploadPage() {
     setLivePreviewLastActivityAt(Date.now())
     setIsLivePreviewing(true)
 
-    const source = new EventSource(`/api/routing-runs/${routingRunId}/swarm-events`)
+    const source = new EventSource(
+      `/api/routing-runs/${routingRunId}/swarm-events`,
+    )
     livePreviewSourceRef.current = source
     let streamCompleted = false
 
@@ -1061,12 +1419,16 @@ function LeadsUploadPage() {
 
       if (payload.type === 'AGENT_TYPING') {
         setTypingAgentIds((previous) =>
-          previous.includes(payload.agentId) ? previous : [...previous, payload.agentId],
+          previous.includes(payload.agentId)
+            ? previous
+            : [...previous, payload.agentId],
         )
       }
 
       if (payload.type === 'AGENT_MESSAGE') {
-        setTypingAgentIds((previous) => previous.filter((agentId) => agentId !== payload.agentId))
+        setTypingAgentIds((previous) =>
+          previous.filter((agentId) => agentId !== payload.agentId),
+        )
       }
 
       pushLivePreviewEvent(payload)
@@ -1127,11 +1489,15 @@ function LeadsUploadPage() {
       if (payload.type === 'HEARTBEAT') return
       if (payload.type === 'AGENT_TYPING') {
         setTypingAgentIds((previous) =>
-          previous.includes(payload.agentId) ? previous : [...previous, payload.agentId],
+          previous.includes(payload.agentId)
+            ? previous
+            : [...previous, payload.agentId],
         )
       }
       if (payload.type === 'AGENT_MESSAGE') {
-        setTypingAgentIds((previous) => previous.filter((agentId) => agentId !== payload.agentId))
+        setTypingAgentIds((previous) =>
+          previous.filter((agentId) => agentId !== payload.agentId),
+        )
       }
 
       pushLivePreviewEvent(payload)
@@ -1166,7 +1532,9 @@ function LeadsUploadPage() {
     const timer = setInterval(() => {
       void pollStatus(status.documentId).catch((error: unknown) => {
         setPolling(false)
-        setUploadError(error instanceof Error ? error.message : 'Status polling failed')
+        setUploadError(
+          error instanceof Error ? error.message : 'Status polling failed',
+        )
       })
     }, 2_000)
 
@@ -1220,7 +1588,9 @@ function LeadsUploadPage() {
     }
 
     const runId =
-      status.routing?.status === 'COMPLETED' ? status.routing.routingRunId : undefined
+      status.routing?.status === 'COMPLETED'
+        ? status.routing.routingRunId
+        : undefined
     if (!runId) return
 
     if (autoPreviewRunRef.current === runId) return
@@ -1237,17 +1607,21 @@ function LeadsUploadPage() {
 
   if (isSessionPending) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] text-white px-6 py-6">
-        <p className="text-gray-300">Checking session...</p>
+      <main className="min-h-screen bg-slate-100 text-slate-900 px-6 py-6">
+        <p className="text-slate-600">Checking session...</p>
       </main>
     )
   }
 
   if (!session) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] text-white px-6 py-6">
-        <p className="text-gray-300">
-          You are not signed in. <Link to="/login" className="text-blue-100">Go to login</Link>.
+      <main className="min-h-screen bg-slate-100 text-slate-900 px-6 py-6">
+        <p className="text-slate-600">
+          You are not signed in.{' '}
+          <Link to="/login" className="text-blue-600">
+            Go to login
+          </Link>
+          .
         </p>
       </main>
     )
@@ -1255,58 +1629,42 @@ function LeadsUploadPage() {
 
   if (role !== 'admin' && role !== 'synergy') {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] text-white px-6 py-6">
-        <p className="text-red-300">Forbidden. Admin or synergy role required.</p>
-      </main>
-    )
-  }
-
-  if (isSessionPending) {
-    return (
-      <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center px-6">
-        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-      </main>
-    )
-  }
-
-  if (!session) {
-    return (
-      <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center px-6">
-        <p className="text-slate-600 dark:text-slate-300">
-          You are not signed in. <Link to="/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:underline transition-colors">Go to login</Link>.
+      <main className="min-h-screen bg-slate-100 text-slate-900 px-6 py-6">
+        <p className="text-red-600">
+          Forbidden. Admin or synergy role required.
         </p>
-      </main>
-    )
-  }
-
-  if (role !== 'admin' && role !== 'synergy') {
-    return (
-      <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center px-6">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 flex items-center justify-center">
-            <span className="text-3xl">🔒</span>
-          </div>
-          <p className="text-red-600 dark:text-red-300">Forbidden. Admin or synergy role required.</p>
-        </div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-10">
+    <main className="min-h-screen bg-slate-100 text-slate-900 px-6 py-10">
       <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-blue-600 shadow-xl shadow-blue-900/30 flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                />
               </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Lead Document Intake</h1>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">
-                Upload project lead files to trigger AI-powered extraction and routing
+              <h1 className="text-2xl font-semibold text-slate-900">
+                Lead Document Intake
+              </h1>
+              <p className="text-slate-500 text-sm">
+                Upload project lead files to trigger AI-powered extraction and
+                routing
               </p>
             </div>
           </div>
@@ -1342,10 +1700,20 @@ function LeadsUploadPage() {
             {/* Upload Error */}
             {uploadError && (
               <div className="flex items-center gap-3 p-4 rounded-xl border border-red-500/30 bg-red-500/10 shadow-sm shadow-red-900/10">
-                <svg className="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-5 h-5 text-red-400 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
-                <p className="text-sm text-red-300">{uploadError}</p>
+                <p className="text-sm text-red-700">{uploadError}</p>
               </div>
             )}
 

@@ -14,7 +14,12 @@ type ApprovalStatus =
 
 type ApprovalItem = {
   id: string
-  status: 'PENDING_SYNERGY' | 'APPROVED' | 'DISPATCHED' | 'BU_REJECTED' | 'CANCELED'
+  status:
+    | 'PENDING_SYNERGY'
+    | 'APPROVED'
+    | 'DISPATCHED'
+    | 'BU_REJECTED'
+    | 'CANCELED'
   assignedRole: 'PRIMARY' | 'CROSS_SELL'
   approvedBy: string
   approvedAt: string
@@ -83,11 +88,14 @@ function SynergyApprovalsPage() {
   const { data: session, isPending } = authClient.useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
 
-  const [statusFilter, setStatusFilter] = useState<ApprovalStatus>('PENDING_SYNERGY')
+  const [statusFilter, setStatusFilter] =
+    useState<ApprovalStatus>('PENDING_SYNERGY')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [response, setResponse] = useState<ApprovalsResponse | null>(null)
-  const [updatingAssignmentId, setUpdatingAssignmentId] = useState<string | null>(null)
+  const [updatingAssignmentId, setUpdatingAssignmentId] = useState<
+    string | null
+  >(null)
 
   async function loadApprovals() {
     setIsLoading(true)
@@ -96,7 +104,9 @@ function SynergyApprovalsPage() {
     try {
       const query = `?status=${encodeURIComponent(statusFilter)}`
       const apiResponse = await fetch(`/api/synergy/approvals${query}`)
-      const payload = (await apiResponse.json()) as ApprovalsResponse & { error?: string }
+      const payload = (await apiResponse.json()) as ApprovalsResponse & {
+        error?: string
+      }
       if (!apiResponse.ok) {
         setError(payload.error || 'Failed to load approvals.')
         return
@@ -104,7 +114,11 @@ function SynergyApprovalsPage() {
 
       setResponse(payload)
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Failed to load approvals.')
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Failed to load approvals.',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -128,34 +142,49 @@ function SynergyApprovalsPage() {
     setError(null)
 
     try {
-      const apiResponse = await fetch(`/api/synergy/approvals/${assignmentId}/status`, {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ status: nextStatus, reason }),
-      })
+      const apiResponse = await fetch(
+        `/api/synergy/approvals/${assignmentId}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ status: nextStatus, reason }),
+        },
+      )
 
-      const payload = (await apiResponse.json()) as { error?: string; details?: string }
+      const payload = (await apiResponse.json()) as {
+        error?: string
+        details?: string
+      }
       if (!apiResponse.ok) {
-        setError(payload.error || payload.details || 'Failed to update assignment.')
+        setError(
+          payload.error || payload.details || 'Failed to update assignment.',
+        )
         return
       }
 
       await loadApprovals()
     } catch (updateError) {
       setError(
-        updateError instanceof Error ? updateError.message : 'Failed to update assignment.',
+        updateError instanceof Error
+          ? updateError.message
+          : 'Failed to update assignment.',
       )
     } finally {
       setUpdatingAssignmentId(null)
     }
   }
 
-  const assignments = useMemo(() => response?.assignments ?? [], [response?.assignments])
+  const assignments = useMemo(
+    () => response?.assignments ?? [],
+    [response?.assignments],
+  )
 
   if (isPending || isLoading) {
     return (
       <main className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-10">
-        <p className="text-slate-600 dark:text-slate-300">Loading Synergy approvals...</p>
+        <p className="text-slate-600 dark:text-slate-300">
+          Loading Synergy approvals...
+        </p>
       </main>
     )
   }
@@ -164,7 +193,11 @@ function SynergyApprovalsPage() {
     return (
       <main className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-10">
         <p className="text-slate-600 dark:text-slate-300">
-          You are not signed in. <Link to="/login" className="text-blue-600 dark:text-blue-400">Go to login</Link>.
+          You are not signed in.{' '}
+          <Link to="/login" className="text-blue-600 dark:text-blue-400">
+            Go to login
+          </Link>
+          .
         </p>
       </main>
     )
@@ -173,7 +206,9 @@ function SynergyApprovalsPage() {
   if (role !== 'admin' && role !== 'synergy') {
     return (
       <main className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-10">
-        <p className="text-red-600 dark:text-rose-300">Forbidden. Admin or synergy role required.</p>
+        <p className="text-red-600 dark:text-rose-300">
+          Forbidden. Admin or synergy role required.
+        </p>
       </main>
     )
   }
@@ -184,21 +219,29 @@ function SynergyApprovalsPage() {
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/60 backdrop-blur-sm p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-semibold mb-2">Synergy Approval Gate</h1>
+              <h1 className="text-2xl font-semibold mb-2">
+                Synergy Approval Gate
+              </h1>
               <p className="text-slate-500 dark:text-slate-400 text-sm max-w-2xl">
-                Review routing recommendations, then approve or reject before BU action.
+                Review routing recommendations, then approve or reject before BU
+                action.
               </p>
             </div>
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="status-filter">
+            <label
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              htmlFor="status-filter"
+            >
               Status filter
             </label>
             <select
               id="status-filter"
               value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value as ApprovalStatus)}
+              onChange={(event) =>
+                setStatusFilter(event.target.value as ApprovalStatus)
+              }
               className="appearance-none rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-2.5 pr-10 text-sm focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer min-w-[180px]"
             >
               <option value="PENDING_SYNERGY">PENDING_SYNERGY</option>
@@ -212,7 +255,9 @@ function SynergyApprovalsPage() {
 
           {error ? (
             <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 shadow-sm dark:shadow-red-900/10">
-              <span className="text-red-600 dark:text-red-300 text-sm">{error}</span>
+              <span className="text-red-600 dark:text-red-300 text-sm">
+                {error}
+              </span>
             </div>
           ) : null}
         </section>
@@ -235,37 +280,42 @@ function SynergyApprovalsPage() {
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-700/30">
                 {assignments.map((assignment) => (
-                  <tr key={assignment.id} className="hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors duration-150 align-top">
+                  <tr
+                    key={assignment.id}
+                    className="hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors duration-150 align-top"
+                  >
                     <td className="px-4 py-3">
-                      <div className="font-mono text-xs text-slate-500">{assignment.id}</div>
+                      <div className="font-mono text-xs text-slate-500">
+                        {assignment.id}
+                      </div>
                       <div className="mt-1">
                         {assignment.status === 'PENDING_SYNERGY' && (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-amber-500/30 bg-amber-500/10 text-amber-300">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-amber-500/30 bg-amber-500/10 text-amber-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                             Pending
                           </span>
                         )}
                         {assignment.status === 'APPROVED' && (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                             Approved
                           </span>
                         )}
                         {assignment.status === 'DISPATCHED' && (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-blue-500/30 bg-blue-500/10 text-blue-300">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-blue-500/30 bg-blue-500/10 text-blue-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                             Dispatched
                           </span>
                         )}
                         {assignment.status === 'BU_REJECTED' && (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-red-500/30 bg-red-500/10 text-red-300">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-red-500/30 bg-red-500/10 text-red-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                             BU Rejected
                           </span>
                         )}
                         {assignment.status === 'CANCELED' && (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-slate-500/30 bg-slate-500/10 text-slate-300">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border border-slate-500/30 bg-slate-500/10 text-slate-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
                             Canceled
                           </span>
                         )}
@@ -275,88 +325,138 @@ function SynergyApprovalsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="font-medium text-white">{assignment.lead.projectName || 'Untitled project'}</div>
-                      <div className="text-xs text-slate-500">{assignment.lead.locationText || '-'}</div>
-                      <div className="text-xs text-slate-600 mt-1">{assignment.lead.currentStatus}</div>
+                      <div className="font-medium text-slate-900">
+                        {assignment.lead.projectName || 'Untitled project'}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {assignment.lead.locationText || '-'}
+                      </div>
+                      <div className="text-xs text-slate-600 mt-1">
+                        {assignment.lead.currentStatus}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="font-medium text-white">{assignment.businessUnit.name}</div>
-                      <div className="text-xs text-slate-500">{assignment.businessUnit.code}</div>
+                      <div className="font-medium text-slate-900">
+                        {assignment.businessUnit.name}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {assignment.businessUnit.code}
+                      </div>
                     </td>
                     <td className="px-4 py-3 max-w-[340px]">
-                      <div className="text-xs text-slate-400">
-                        Score <span className="font-mono font-medium text-white">{assignment.routingRecommendation.finalScore.toFixed(4)}</span> | Confidence{' '}
-                        <span className="font-mono font-medium text-white">{assignment.routingRecommendation.confidence.toFixed(4)}</span>
+                      <div className="text-xs text-slate-600">
+                        Score{' '}
+                        <span className="font-mono font-medium text-slate-900">
+                          {assignment.routingRecommendation.finalScore.toFixed(
+                            4,
+                          )}
+                        </span>{' '}
+                        | Confidence{' '}
+                        <span className="font-mono font-medium text-slate-900">
+                          {assignment.routingRecommendation.confidence.toFixed(
+                            4,
+                          )}
+                        </span>
                       </div>
-                      <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                      <p className="text-xs text-slate-700 mt-2 leading-relaxed">
                         {assignment.routingRecommendation.reasonSummary}
                       </p>
                     </td>
                     <td className="px-4 py-3">
-                      {assignment.routingRecommendation.skuProposals.length > 0 ? (
+                      {assignment.routingRecommendation.skuProposals.length >
+                      0 ? (
                         <ul className="space-y-1.5">
-                          {assignment.routingRecommendation.skuProposals.map((sku) => (
-                            <li key={`${assignment.id}-${sku.buSku.id}`} className="text-xs">
-                              <span className="text-slate-500">{sku.rank}.</span>{' '}
-                              <span className="font-medium text-white">{sku.buSku.skuCode}</span> - {sku.buSku.skuName}
-                            </li>
-                          ))}
+                          {assignment.routingRecommendation.skuProposals.map(
+                            (sku) => (
+                              <li
+                                key={`${assignment.id}-${sku.buSku.id}`}
+                                className="text-xs"
+                              >
+                                <span className="text-slate-500">
+                                  {sku.rank}.
+                                </span>{' '}
+                                <span className="font-medium text-slate-900">
+                                  {sku.buSku.skuCode}
+                                </span>{' '}
+                                - {sku.buSku.skuName}
+                              </li>
+                            ),
+                          )}
                         </ul>
                       ) : (
-                        <span className="text-xs text-slate-500">No SKU proposals</span>
+                        <span className="text-xs text-slate-500">
+                          No SKU proposals
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3 max-w-[380px]">
                       {assignment.agentConversation.length > 0 ? (
-                        <details className="group rounded-xl border border-slate-700/50 bg-slate-800/40 hover:bg-slate-800/60 transition-colors">
-                          <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors select-none">
+                        <details className="group rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors">
+                          <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-blue-700 hover:text-blue-600 transition-colors select-none">
                             View {assignment.agentConversation.length} messages
                           </summary>
                           <div className="mt-2 px-3 pb-3 space-y-2">
                             {assignment.agentConversation.map((message) => (
                               <article
                                 key={message.id}
-                                className="rounded-lg border border-slate-700/50 bg-slate-800/60 px-3 py-2"
+                                className="rounded-lg border border-slate-200 bg-white px-3 py-2"
                               >
                                 <div className="flex items-center gap-2 mb-1.5">
                                   <img
-                                    src={getAgentAvatar(message.agentId).imagePath}
+                                    src={
+                                      getAgentAvatar(message.agentId).imagePath
+                                    }
                                     alt={toAgentLabel(message.agentId)}
-                                    className="h-6 w-6 rounded-md border border-slate-600/50"
+                                    className="h-6 w-6 rounded-md border border-slate-200"
                                   />
                                   {message.recipientId ? (
                                     <>
                                       <span className="text-slate-500">→</span>
                                       <img
-                                        src={getAgentAvatar(message.recipientId).imagePath}
+                                        src={
+                                          getAgentAvatar(message.recipientId)
+                                            .imagePath
+                                        }
                                         alt={toAgentLabel(message.recipientId)}
-                                        className="h-6 w-6 rounded-md border border-slate-600/50"
+                                        className="h-6 w-6 rounded-md border border-slate-200"
                                       />
                                     </>
                                   ) : null}
-                                  <p className="text-[11px] text-blue-300 font-medium">
+                                  <p className="text-[11px] text-blue-700 font-medium">
                                     {toAgentLabel(message.agentId)}
-                                    {message.recipientId ? ` → ${toAgentLabel(message.recipientId)}` : ''}
+                                    {message.recipientId
+                                      ? ` → ${toAgentLabel(message.recipientId)}`
+                                      : ''}
                                   </p>
                                 </div>
                                 <p className="text-[11px] text-slate-500">
-                                  {new Date(message.createdAt).toLocaleString()} | <span className="text-slate-400">{message.messageType}</span>
+                                  {new Date(message.createdAt).toLocaleString()}{' '}
+                                  |{' '}
+                                  <span className="text-slate-500">
+                                    {message.messageType}
+                                  </span>
                                 </p>
-                                <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">{message.content}</p>
+                                <p className="text-xs text-slate-700 mt-1.5 leading-relaxed">
+                                  {message.content}
+                                </p>
                               </article>
                             ))}
                           </div>
                         </details>
                       ) : (
-                        <span className="text-xs text-slate-500">No conversation logs</span>
+                        <span className="text-xs text-slate-500">
+                          No conversation logs
+                        </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-300 max-w-[240px]">
-                      {assignment.status === 'CANCELED'
-                        ? assignment.synergyDecisionReason || 'No reason'
-                        : assignment.status === 'BU_REJECTED'
-                          ? assignment.buDecisionReason || 'No reason'
-                          : <span className="text-slate-500">-</span>}
+                    <td className="px-4 py-3 text-xs text-slate-700 max-w-[240px]">
+                      {assignment.status === 'CANCELED' ? (
+                        assignment.synergyDecisionReason || 'No reason'
+                      ) : assignment.status === 'BU_REJECTED' ? (
+                        assignment.buDecisionReason || 'No reason'
+                      ) : (
+                        <span className="text-slate-500">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {assignment.artifacts.length > 0 ? (
@@ -365,7 +465,7 @@ function SynergyApprovalsPage() {
                             <a
                               key={artifact.id}
                               href={artifact.downloadUrl}
-                              className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 text-xs font-medium hover:underline transition-colors"
+                              className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-600 text-xs font-medium hover:underline transition-colors"
                             >
                               <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                               {artifact.artifactType}
@@ -373,7 +473,9 @@ function SynergyApprovalsPage() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-500">No artifacts</span>
+                        <span className="text-xs text-slate-500">
+                          No artifacts
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -381,7 +483,9 @@ function SynergyApprovalsPage() {
                         <div className="flex gap-2">
                           <button
                             type="button"
-                            onClick={() => void updateStatus(assignment.id, 'APPROVED')}
+                            onClick={() =>
+                              void updateStatus(assignment.id, 'APPROVED')
+                            }
                             disabled={updatingAssignmentId === assignment.id}
                             className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white shadow-md shadow-emerald-900/20 hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-900/30 active:translate-y-px active:shadow-sm disabled:opacity-50 transition-all duration-200"
                           >
@@ -390,8 +494,14 @@ function SynergyApprovalsPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              const reason = window.prompt('Reason for rejecting this assignment (optional)')
-                              void updateStatus(assignment.id, 'CANCELED', reason || undefined)
+                              const reason = window.prompt(
+                                'Reason for rejecting this assignment (optional)',
+                              )
+                              void updateStatus(
+                                assignment.id,
+                                'CANCELED',
+                                reason || undefined,
+                              )
                             }}
                             disabled={updatingAssignmentId === assignment.id}
                             className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-medium text-white shadow-md shadow-rose-900/20 hover:bg-rose-500 hover:shadow-lg hover:shadow-rose-900/30 active:translate-y-px active:shadow-sm disabled:opacity-50 transition-all duration-200"
@@ -400,14 +510,19 @@ function SynergyApprovalsPage() {
                           </button>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-500">No action</span>
+                        <span className="text-xs text-slate-500">
+                          No action
+                        </span>
                       )}
                     </td>
                   </tr>
                 ))}
                 {assignments.length === 0 ? (
                   <tr>
-                    <td className="px-4 py-12 text-slate-400 text-center" colSpan={9}>
+                    <td
+                      className="px-4 py-12 text-slate-500 text-center"
+                      colSpan={9}
+                    >
                       No assignments found for the selected filter.
                     </td>
                   </tr>
