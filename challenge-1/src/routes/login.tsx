@@ -66,19 +66,26 @@ export function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-900 text-slate-100 px-6 py-14">
-      <section className="max-w-md mx-auto rounded-2xl border border-slate-700 bg-slate-800/80 p-6 shadow-xl">
-        <h1 className="text-2xl font-semibold mb-2">Sign In</h1>
-        <p className="text-slate-300 mb-6 text-sm">
-          Use your admin-provisioned account to access the BU CRM workspace.
-        </p>
+    <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center px-6 py-12">
+      <section className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/60 backdrop-blur-sm p-8 shadow-2xl shadow-slate-200/50 dark:shadow-slate-900/50">
+        <div className="text-center mb-8">
+          
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">Welcome</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">
+            Sign in to access the Chin-Hin CRM workspace
+          </p>
+        </div>
 
-        {isPending ? <p className="text-slate-400 text-sm">Checking session...</p> : null}
+        {isPending ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+          </div>
+        ) : null}
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-sm text-slate-200" htmlFor="email">
-              Email
+        <form onSubmit={onSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="email">
+              Email Address
             </label>
             <input
               id="email"
@@ -86,12 +93,13 @@ export function LoginPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
-              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
+              placeholder="you@example.com"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-sm text-slate-200" htmlFor="password">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="password">
               Password
             </label>
             <input
@@ -100,18 +108,30 @@ export function LoginPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
-              className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
+              placeholder="••••••••"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
           </div>
 
-          {error ? <p className="text-sm text-red-300">{error}</p> : null}
+          {error ? (
+            <div className="flex items-start gap-3 p-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 shadow-sm dark:shadow-red-900/10">
+              <span className="text-red-600 dark:text-red-400 text-sm">{error}</span>
+            </div>
+          ) : null}
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-lg bg-cyan-600 hover:bg-cyan-700 disabled:opacity-60 px-4 py-2 font-medium"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 font-medium text-white shadow-lg shadow-blue-900/20 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-900/30 active:translate-y-px active:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg transition-all duration-200"
           >
-            {isSubmitting ? 'Signing in...' : 'Sign In'}
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </form>
       </section>
