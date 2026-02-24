@@ -19,7 +19,7 @@ type StatusResponse = {
   normalizedFactsCount?: number
   errors?: string[]
   routing?: {
-    status: 'COMPLETED' | 'SKIPPED' | 'FAILED'
+    status: 'COMPLETED' | 'SKIPPED' | 'FAILED' | 'PENDING_APPROVAL'
     routingRunId?: string
     recommendationsCount?: number
     assignmentCount?: number
@@ -116,6 +116,34 @@ type SwarmPreviewEvent =
       timestamp: string
     }
   | {
+      type: 'DELEGATION_APPROVAL_REQUIRED'
+      leadId: string
+      routingRunId: string
+      sessionId: string
+      stepId: string
+      stepIndex: number
+      subagentName: string
+      timestamp: string
+    }
+  | {
+      type: 'DELEGATION_DECISION_APPLIED'
+      leadId: string
+      routingRunId: string
+      sessionId: string
+      stepId: string
+      decision: 'APPROVED' | 'REJECTED'
+      reviewerId: string
+      timestamp: string
+    }
+  | {
+      type: 'SESSION_PENDING'
+      leadId: string
+      routingRunId: string
+      sessionId: string
+      reason: string
+      timestamp: string
+    }
+  | {
       type: 'HEARTBEAT'
       timestamp: string
       stage?: string
@@ -196,7 +224,7 @@ function UploadZone({
   file: File | null
   setFile: (file: File | null) => void
   isUploading: boolean
-  onUpload: (e: React.FormEvent) => void
+  onUpload: (e: React.FormEvent<HTMLFormElement>) => void | Promise<void>
 }) {
   const [isDragging, setIsDragging] = useState(false)
 
@@ -495,6 +523,8 @@ function FileSummary({
                 className={
                   status.routing.status === 'COMPLETED'
                     ? 'text-emerald-600'
+                    : status.routing.status === 'PENDING_APPROVAL'
+                      ? 'text-amber-600'
                     : 'text-slate-700'
                 }
               >
@@ -505,14 +535,18 @@ function FileSummary({
                   | {status.routing.assignmentCount} assignments
                 </span>
               )}
+              {status.routing.status === 'PENDING_APPROVAL' &&
+                status.routing.reason && (
+                  <span className="text-amber-700">| {status.routing.reason}</span>
+                )}
             </p>
           </div>
         )}
 
         {/* Errors */}
-        {status.errors?.length > 0 && (
+        {(status.errors?.length ?? 0) > 0 && (
           <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3">
-            <p className="text-red-700 text-xs">{status.errors.join(' | ')}</p>
+            <p className="text-red-700 text-xs">{status.errors?.join(' | ')}</p>
           </div>
         )}
 
@@ -702,7 +736,11 @@ function FileHistory({
                 <td className="py-3">
                   {doc.latestRoutingRunId ? (
                     <button
-                      onClick={() => onReplay(doc.latestRoutingRunId)}
+                      onClick={() => {
+                        if (doc.latestRoutingRunId) {
+                          onReplay(doc.latestRoutingRunId)
+                        }
+                      }}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-medium transition-colors"
                     >
                       <svg
@@ -1094,6 +1132,36 @@ function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
     )
   }
 
+  if (event.type === 'DELEGATION_APPROVAL_REQUIRED') {
+    return (
+      <div className="flex justify-center">
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-800 text-sm font-medium shadow-sm shadow-amber-900/10">
+          Approval Required • {event.subagentName} (step {event.stepIndex})
+        </span>
+      </div>
+    )
+  }
+
+  if (event.type === 'DELEGATION_DECISION_APPLIED') {
+    return (
+      <div className="flex justify-center">
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-800 text-sm font-medium shadow-sm shadow-blue-900/10">
+          Delegation {event.decision.toLowerCase()} by {event.reviewerId}
+        </span>
+      </div>
+    )
+  }
+
+  if (event.type === 'SESSION_PENDING') {
+    return (
+      <div className="flex justify-center">
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-900 text-sm font-medium shadow-sm shadow-amber-900/10">
+          Session Pending: {event.reason}
+        </span>
+      </div>
+    )
+  }
+
   return null
 }
 
@@ -1363,6 +1431,25 @@ function LeadsUploadPage() {
       setLivePreviewWorkingText(
         `${getAgentLabel(event.agentId)} sent an update`,
       )
+      return
+    }
+
+    if (event.type === 'DELEGATION_APPROVAL_REQUIRED') {
+      setLivePreviewWorkingText(
+        `Waiting Synergy approval for ${event.subagentName}`,
+      )
+      return
+    }
+
+    if (event.type === 'DELEGATION_DECISION_APPLIED') {
+      setLivePreviewWorkingText(
+        `Decision ${event.decision.toLowerCase()} for delegation step`,
+      )
+      return
+    }
+
+    if (event.type === 'SESSION_PENDING') {
+      setLivePreviewWorkingText(event.reason)
       return
     }
 

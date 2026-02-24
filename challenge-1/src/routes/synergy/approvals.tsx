@@ -75,6 +75,29 @@ type ApprovalsResponse = {
   assignments: ApprovalItem[]
 }
 
+type DelegationStatusFilter = 'PENDING' | 'ALL'
+
+type DelegationItem = {
+  stepId: string
+  sessionId: string
+  routingRunId: string
+  leadId: string
+  leadProjectName: string | null
+  leadLocationText: string | null
+  stepIndex: number
+  subagentName: string
+  stepStatus: string
+  sessionStatus: string
+  initiatedBy: string
+  createdAt: string
+  requestPayload: Record<string, unknown>
+}
+
+type DelegationsResponse = {
+  statusFilter: DelegationStatusFilter
+  delegations: DelegationItem[]
+}
+
 export const Route = createFileRoute('/synergy/approvals')({
   component: SynergyApprovalsPage,
 })
@@ -85,34 +108,58 @@ function SynergyApprovalsPage() {
 
   const [statusFilter, setStatusFilter] =
     useState<ApprovalStatus>('PENDING_SYNERGY')
+  const [delegationFilter, setDelegationFilter] =
+    useState<DelegationStatusFilter>('PENDING')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [response, setResponse] = useState<ApprovalsResponse | null>(null)
+  const [delegationsResponse, setDelegationsResponse] =
+    useState<DelegationsResponse | null>(null)
   const [updatingAssignmentId, setUpdatingAssignmentId] = useState<
     string | null
   >(null)
+  const [updatingDelegationStepId, setUpdatingDelegationStepId] = useState<
+    string | null
+  >(null)
 
-  async function loadApprovals() {
+  async function fetchApprovals() {
+    const query = `?status=${encodeURIComponent(statusFilter)}`
+    const apiResponse = await fetch(`/api/synergy/approvals${query}`)
+    const payload = (await apiResponse.json()) as ApprovalsResponse & {
+      error?: string
+    }
+    if (!apiResponse.ok) {
+      throw new Error(payload.error || 'Failed to load approvals.')
+    }
+
+    setResponse(payload)
+  }
+
+  async function fetchDelegations() {
+    const query = `?status=${encodeURIComponent(delegationFilter)}`
+    const apiResponse = await fetch(`/api/synergy/delegations${query}`)
+    const payload = (await apiResponse.json()) as DelegationsResponse & {
+      error?: string
+      details?: string
+    }
+    if (!apiResponse.ok) {
+      throw new Error(
+        payload.error || payload.details || 'Failed to load delegations.',
+      )
+    }
+
+    setDelegationsResponse(payload)
+  }
+
+  async function loadPageData() {
     setIsLoading(true)
     setError(null)
 
     try {
-      const query = `?status=${encodeURIComponent(statusFilter)}`
-      const apiResponse = await fetch(`/api/synergy/approvals${query}`)
-      const payload = (await apiResponse.json()) as ApprovalsResponse & {
-        error?: string
-      }
-      if (!apiResponse.ok) {
-        setError(payload.error || 'Failed to load approvals.')
-        return
-      }
-
-      setResponse(payload)
+      await Promise.all([fetchApprovals(), fetchDelegations()])
     } catch (loadError) {
       setError(
-        loadError instanceof Error
-          ? loadError.message
-          : 'Failed to load approvals.',
+        loadError instanceof Error ? loadError.message : 'Failed to load data.',
       )
     } finally {
       setIsLoading(false)
@@ -125,8 +172,8 @@ function SynergyApprovalsPage() {
       return
     }
 
-    void loadApprovals()
-  }, [session, statusFilter])
+    void loadPageData()
+  }, [session, statusFilter, delegationFilter])
 
   async function updateStatus(
     assignmentId: string,
@@ -157,7 +204,7 @@ function SynergyApprovalsPage() {
         return
       }
 
-      await loadApprovals()
+      await loadPageData()
     } catch (updateError) {
       setError(
         updateError instanceof Error
@@ -173,6 +220,46 @@ function SynergyApprovalsPage() {
     () => response?.assignments ?? [],
     [response?.assignments],
   )
+  const delegations = useMemo(
+    () => delegationsResponse?.delegations ?? [],
+    [delegationsResponse?.delegations],
+  )
+
+  async function updateDelegationStatus(
+    stepId: string,
+    status: 'APPROVED' | 'REJECTED',
+    reason?: string,
+  ) {
+    setUpdatingDelegationStepId(stepId)
+    setError(null)
+
+    try {
+      const apiResponse = await fetch(`/api/synergy/delegations/${stepId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status, reason }),
+      })
+
+      const payload = (await apiResponse.json()) as {
+        error?: string
+        details?: string
+      }
+      if (!apiResponse.ok) {
+        setError(payload.error || payload.details || 'Failed to update delegation.')
+        return
+      }
+
+      await loadPageData()
+    } catch (updateError) {
+      setError(
+        updateError instanceof Error
+          ? updateError.message
+          : 'Failed to update delegation.',
+      )
+    } finally {
+      setUpdatingDelegationStepId(null)
+    }
+  }
 
   if (isPending || isLoading) {
     return (
@@ -246,6 +333,24 @@ function SynergyApprovalsPage() {
               <option value="CANCELED">CANCELED</option>
               <option value="ALL">ALL</option>
             </select>
+
+            <label
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              htmlFor="delegation-status-filter"
+            >
+              Delegation filter
+            </label>
+            <select
+              id="delegation-status-filter"
+              value={delegationFilter}
+              onChange={(event) =>
+                setDelegationFilter(event.target.value as DelegationStatusFilter)
+              }
+              className="appearance-none rounded-xl border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-4 py-2.5 pr-10 text-sm focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer min-w-[180px]"
+            >
+              <option value="PENDING">PENDING</option>
+              <option value="ALL">ALL</option>
+            </select>
           </div>
 
           {error ? (
@@ -255,6 +360,128 @@ function SynergyApprovalsPage() {
               </span>
             </div>
           ) : null}
+        </section>
+
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-sm shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden">
+          <div className="border-b border-slate-200 dark:border-slate-700/50 px-4 py-3">
+            <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+              Delegation Approvals
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Approve each deep-agent delegation step before orchestration
+              continues.
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[920px] text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/80 text-left text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+                  <th className="px-4 py-3">Step</th>
+                  <th className="px-4 py-3">Lead</th>
+                  <th className="px-4 py-3">Subagent</th>
+                  <th className="px-4 py-3">Session</th>
+                  <th className="px-4 py-3">Requested At</th>
+                  <th className="px-4 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-700/30">
+                {delegations.map((delegation) => (
+                  <tr
+                    key={delegation.stepId}
+                    className="hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors duration-150 align-top"
+                  >
+                    <td className="px-4 py-3">
+                      <div className="font-mono text-xs text-slate-500">
+                        {delegation.stepId}
+                      </div>
+                      <div className="text-xs text-slate-600 mt-1">
+                        Step {delegation.stepIndex} · {delegation.stepStatus}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-slate-900">
+                        {delegation.leadProjectName || 'Untitled project'}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {delegation.leadLocationText || '-'}
+                      </div>
+                      <div className="text-xs text-slate-600 mt-1">
+                        {delegation.leadId}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs font-medium text-slate-800">
+                      {delegation.subagentName}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="text-xs text-slate-700">
+                        {delegation.sessionStatus}
+                      </div>
+                      <div className="font-mono text-xs text-slate-500 mt-1">
+                        {delegation.sessionId}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-slate-700">
+                      {new Date(delegation.createdAt).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      {delegation.stepStatus === 'PENDING' ? (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void updateDelegationStatus(
+                                delegation.stepId,
+                                'APPROVED',
+                              )
+                            }
+                            disabled={
+                              updatingDelegationStepId === delegation.stepId
+                            }
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white shadow-md shadow-emerald-900/20 hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-900/30 active:translate-y-px active:shadow-sm disabled:opacity-50 transition-all duration-200"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const reason = window.prompt(
+                                'Reason for rejecting this delegation step',
+                              )
+                              if (reason && reason.trim().length >= 5) {
+                                void updateDelegationStatus(
+                                  delegation.stepId,
+                                  'REJECTED',
+                                  reason.trim(),
+                                )
+                              }
+                            }}
+                            disabled={
+                              updatingDelegationStepId === delegation.stepId
+                            }
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-medium text-white shadow-md shadow-rose-900/20 hover:bg-rose-500 hover:shadow-lg hover:shadow-rose-900/30 active:translate-y-px active:shadow-sm disabled:opacity-50 transition-all duration-200"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-500">No action</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {delegations.length === 0 ? (
+                  <tr>
+                    <td
+                      className="px-4 py-8 text-slate-500 text-center"
+                      colSpan={6}
+                    >
+                      No delegation steps found for the selected filter.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-sm shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden">

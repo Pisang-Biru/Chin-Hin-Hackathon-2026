@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { runDeterministicRoutingForLead } from '@/lib/routing/run-deterministic-routing'
+import { runRoutingForLead } from '@/lib/routing/run-routing-for-lead'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { jsonResponse, sanitizeErrorMessage } from '@/lib/server/json-response'
 
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/api/leads/$leadId/reroute')({
         const principal = authz.principal!
 
         try {
-          const summary = await runDeterministicRoutingForLead({
+          const summary = await runRoutingForLead({
             leadId: params.leadId,
             triggeredBy: principal.userId,
           })
@@ -29,6 +29,7 @@ export const Route = createFileRoute('/api/leads/$leadId/reroute')({
               recommendationsCount: summary.recommendationsCount,
               assignmentCount: summary.assignmentCount,
               scores: summary.scores,
+              status: summary.status,
             },
             202,
           )

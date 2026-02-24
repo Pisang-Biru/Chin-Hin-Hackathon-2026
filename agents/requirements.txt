@@ -1,4 +1,8 @@
 deepagents
 tavily-python
 fastapi
-dotenv
+python-dotenv
+uvicorn
+pydantic
+psycopg[binary]
+langgraph-checkpoint-postgres

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { runDeterministicRoutingForLead } from '@/lib/routing/run-deterministic-routing'
-import type { RoutingLiveEvent } from '@/lib/routing/run-deterministic-routing'
+import { runRoutingForLead } from '@/lib/routing/run-routing-for-lead'
+import type { RoutingLiveEvent } from '@/lib/routing/run-routing-for-lead'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { sanitizeErrorMessage } from '@/lib/server/json-response'
 
@@ -83,7 +83,7 @@ export const Route = createFileRoute('/api/leads/$leadId/reroute-live')({
 
             void (async () => {
               try {
-                const summary = await runDeterministicRoutingForLead({
+                const summary = await runRoutingForLead({
                   leadId,
                   triggeredBy: principal.userId,
                   previewDelayMs: 260,

@@ -51,6 +51,22 @@ enum RoutingStatus {
   FAILED
 }
 
+enum AgentSessionStatus {
+  IN_PROGRESS
+  PENDING_APPROVAL
+  COMPLETED
+  REJECTED
+  FAILED
+}
+
+enum AgentDelegationStepStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+}
+
 enum RecommendationRole {
   PRIMARY
   CROSS_SELL
@@ -119,6 +135,7 @@ model Lead {
 
   facts         LeadFact[]
   routingRuns   RoutingRun[]
+  agentSessions AgentSession[]
   assignments   Assignment[]
   feedbackEvent FeedbackEvent[]
 
@@ -220,10 +237,52 @@ model RoutingRun {
 
   recommendations RoutingRecommendation[]
   agentLogs       AgentLog[]
+  agentSession    AgentSession?
   feedbackEvents  FeedbackEvent[]
 
   @@index([leadId, startedAt])
   @@index([status])
+}
+
+model AgentSession {
+  id            String             @id @default(cuid())
+  routingRunId  String             @unique
+  routingRun    RoutingRun         @relation(fields: [routingRunId], references: [id], onDelete: Cascade)
+  leadId        String
+  lead          Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  threadId      String
+  status        AgentSessionStatus @default(IN_PROGRESS)
+  pendingStepId String?
+  initiatedBy   String
+  lastError     String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  completedAt   DateTime?
+
+  steps AgentDelegationStep[]
+
+  @@index([status, updatedAt])
+  @@index([leadId, createdAt])
+}
+
+model AgentDelegationStep {
+  id            String                    @id @default(cuid())
+  sessionId     String
+  session       AgentSession              @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  stepIndex     Int
+  subagentName  String
+  status        AgentDelegationStepStatus @default(PENDING)
+  requestPayload Json?
+  decisionBy    String?
+  decisionReason String?
+  decidedAt     DateTime?
+  executedAt    DateTime?
+  error         String?
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  @@unique([sessionId, stepIndex])
+  @@index([status, createdAt])
 }
 
 model RoutingRecommendation {

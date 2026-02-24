@@ -89,6 +89,24 @@ type SwarmReplayEvent =
       timestamp: string
       stage: string
     }
+  | {
+      type: 'DELEGATION_APPROVAL_REQUIRED'
+      leadId: string
+      routingRunId: string
+      sessionId: string
+      stepId: string
+      stepIndex: number
+      subagentName: string
+      timestamp: string
+    }
+  | {
+      type: 'SESSION_PENDING'
+      leadId: string
+      routingRunId: string
+      sessionId: string
+      reason: string
+      timestamp: string
+    }
 
 function formatSseData(payload: SwarmReplayEvent): string {
   return `data: ${JSON.stringify(payload)}\n\n`
@@ -168,6 +186,30 @@ export const Route = createFileRoute('/api/routing-runs/$routingRunId/swarm-even
         const routingRunId = run.id
         const encoder = new TextEncoder()
 
+        const pendingSessionRows = await prisma.$queryRaw<
+          Array<{
+            sessionId: string
+            sessionStatus: string
+            pendingStepId: string | null
+            lastError: string | null
+            stepIndex: number | null
+            subagentName: string | null
+          }>
+        >`
+          SELECT
+            session."id" AS "sessionId",
+            session."status"::text AS "sessionStatus",
+            session."pendingStepId" AS "pendingStepId",
+            session."lastError" AS "lastError",
+            step."stepIndex" AS "stepIndex",
+            step."subagentName" AS "subagentName"
+          FROM "AgentSession" session
+          LEFT JOIN "AgentDelegationStep" step ON step."id" = session."pendingStepId"
+          WHERE session."routingRunId" = ${routingRunId}
+          LIMIT 1
+        `
+        const pendingSession = pendingSessionRows[0] ?? null
+
         const stream = new ReadableStream({
           start(controller) {
             let isClosed = false
@@ -215,6 +257,36 @@ export const Route = createFileRoute('/api/routing-runs/$routingRunId/swarm-even
                 activeRuleSetsCount: run.recommendations.length,
                 timestamp: run.startedAt.toISOString(),
               })
+
+              if (
+                pendingSession &&
+                pendingSession.sessionStatus === 'PENDING_APPROVAL' &&
+                pendingSession.pendingStepId
+              ) {
+                send({
+                  type: 'DELEGATION_APPROVAL_REQUIRED',
+                  leadId,
+                  routingRunId,
+                  sessionId: pendingSession.sessionId,
+                  stepId: pendingSession.pendingStepId,
+                  stepIndex: pendingSession.stepIndex ?? 0,
+                  subagentName: pendingSession.subagentName || 'unknown_subagent',
+                  timestamp: new Date().toISOString(),
+                })
+                await sleep(180)
+
+                send({
+                  type: 'SESSION_PENDING',
+                  leadId,
+                  routingRunId,
+                  sessionId: pendingSession.sessionId,
+                  reason:
+                    pendingSession.lastError ||
+                    'Awaiting Synergy delegation approval before completion.',
+                  timestamp: new Date().toISOString(),
+                })
+                await sleep(180)
+              }
 
               for (const recommendation of run.recommendations) {
                 const buCode = recommendation.businessUnit.code

@@ -8,7 +8,7 @@ import {
   ROUTING_CORE_FACT_KEYS,
   normalizeToLeadFacts,
 } from '@/lib/leads/normalize-extraction'
-import { runDeterministicRoutingForLead } from '@/lib/routing/run-deterministic-routing'
+import { runRoutingForLead } from '@/lib/routing/run-routing-for-lead'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { jsonResponse, sanitizeErrorMessage } from '@/lib/server/json-response'
 
@@ -199,6 +199,11 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
                 assignmentCount: number
               }
             | {
+                status: 'PENDING_APPROVAL'
+                routingRunId: string
+                reason: string
+              }
+            | {
                 status: 'SKIPPED'
                 reason: string
               }
@@ -226,15 +231,23 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
             }
 
             try {
-              const routingSummary = await runDeterministicRoutingForLead({
+              const routingSummary = await runRoutingForLead({
                 leadId,
                 triggeredBy: 'system:auto',
               })
-              routing = {
-                status: 'COMPLETED',
-                routingRunId: routingSummary.routingRunId,
-                recommendationsCount: routingSummary.recommendationsCount,
-                assignmentCount: routingSummary.assignmentCount,
+              if (routingSummary.status === 'PENDING_APPROVAL') {
+                routing = {
+                  status: 'PENDING_APPROVAL',
+                  routingRunId: routingSummary.routingRunId,
+                  reason: 'Awaiting delegation approval from Synergy.',
+                }
+              } else {
+                routing = {
+                  status: 'COMPLETED',
+                  routingRunId: routingSummary.routingRunId,
+                  recommendationsCount: routingSummary.recommendationsCount,
+                  assignmentCount: routingSummary.assignmentCount,
+                }
               }
             } catch (routingError) {
               const error = sanitizeErrorMessage(routingError)
