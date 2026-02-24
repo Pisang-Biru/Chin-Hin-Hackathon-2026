@@ -57,6 +57,7 @@ export type DeepAgentsRoutingEvent =
       stepId: string
       stepIndex: number
       subagentName: string
+      delegatedItem?: string | null
       timestamp: string
     }
   | {
@@ -169,6 +170,48 @@ function normalizeTextValue(value: unknown): string | null {
 
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : null
+}
+
+function summarizeDelegatedItem(input: {
+  subagentName: string
+  requestPayload: Record<string, unknown>
+}): string {
+  const { subagentName, requestPayload } = input
+
+  if (subagentName === 'bu_selector') {
+    const lead = (requestPayload.lead as Record<string, unknown> | undefined) ?? {}
+    const projectName = normalizeTextValue(lead.projectName)
+    const leadId = normalizeTextValue(lead.id)
+    if (projectName) {
+      return `BU shortlisting for ${projectName}`
+    }
+    if (leadId) {
+      return `BU shortlisting for lead ${leadId}`
+    }
+    return 'BU shortlisting for current lead'
+  }
+
+  if (subagentName === 'sku_selector') {
+    const buRecommendations = Array.isArray(requestPayload.buRecommendations)
+      ? requestPayload.buRecommendations
+      : []
+    const buCodes = buRecommendations
+      .map((item) => {
+        if (!item || typeof item !== 'object') {
+          return null
+        }
+        const record = item as Record<string, unknown>
+        return normalizeTextValue(record.businessUnitCode)
+      })
+      .filter((value): value is string => Boolean(value))
+
+    if (buCodes.length > 0) {
+      return `SKU proposals for ${buCodes.join(', ')}`
+    }
+    return 'SKU proposal planning'
+  }
+
+  return `Delegation for ${subagentName}`
 }
 
 function formatDelegationBrief(input: {
@@ -881,6 +924,10 @@ export async function runDeepAgentsRoutingForLead(
       stepId: sessionEnvelope.pendingStep.stepId,
       stepIndex: sessionEnvelope.pendingStep.stepIndex,
       subagentName: sessionEnvelope.pendingStep.subagentName,
+      delegatedItem: summarizeDelegatedItem({
+        subagentName: sessionEnvelope.pendingStep.subagentName,
+        requestPayload: sessionEnvelope.pendingStep.requestPayload,
+      }),
       timestamp: new Date().toISOString(),
     })
 
@@ -1039,6 +1086,10 @@ export async function handleDeepAgentDelegationDecision(
       stepId: envelope.pendingStep.stepId,
       stepIndex: envelope.pendingStep.stepIndex,
       subagentName: envelope.pendingStep.subagentName,
+      delegatedItem: summarizeDelegatedItem({
+        subagentName: envelope.pendingStep.subagentName,
+        requestPayload: envelope.pendingStep.requestPayload,
+      }),
       timestamp: new Date().toISOString(),
     })
   }

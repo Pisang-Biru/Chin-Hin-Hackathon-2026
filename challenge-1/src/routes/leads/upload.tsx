@@ -123,6 +123,7 @@ type SwarmPreviewEvent =
       stepId: string
       stepIndex: number
       subagentName: string
+      delegatedItem?: string | null
       timestamp: string
     }
   | {
@@ -815,8 +816,9 @@ function SwarmChatPanel({
   routingRunId,
   typingAgents,
   approvingStepId,
+  rejectingStepId,
   onApproveDelegationStep,
-  onOpenDelegationApprovals,
+  onRejectDelegationStep,
   onStop,
 }: {
   events: SwarmPreviewEvent[]
@@ -829,8 +831,9 @@ function SwarmChatPanel({
   routingRunId: string | null
   typingAgents: string[]
   approvingStepId: string | null
+  rejectingStepId: string | null
   onApproveDelegationStep: (stepId: string) => Promise<void>
-  onOpenDelegationApprovals: () => void
+  onRejectDelegationStep: (stepId: string) => Promise<void>
   onStop: () => void
 }) {
   const chatEndRef = useRef<HTMLDivElement>(null)
@@ -976,8 +979,9 @@ function SwarmChatPanel({
                 key={`${event.type}-${index}`}
                 event={event}
                 approvingStepId={approvingStepId}
+                rejectingStepId={rejectingStepId}
                 onApproveDelegationStep={onApproveDelegationStep}
-                onOpenDelegationApprovals={onOpenDelegationApprovals}
+                onRejectDelegationStep={onRejectDelegationStep}
               />
             ))
         )}
@@ -997,13 +1001,15 @@ function SwarmChatPanel({
 function ChatMessage({
   event,
   approvingStepId,
+  rejectingStepId,
   onApproveDelegationStep,
-  onOpenDelegationApprovals,
+  onRejectDelegationStep,
 }: {
   event: SwarmPreviewEvent
   approvingStepId: string | null
+  rejectingStepId: string | null
   onApproveDelegationStep: (stepId: string) => Promise<void>
-  onOpenDelegationApprovals: () => void
+  onRejectDelegationStep: (stepId: string) => Promise<void>
 }) {
   const getAvatar = getAgentAvatar
   const getLabel = getAgentLabel
@@ -1156,11 +1162,19 @@ function ChatMessage({
 
   if (event.type === 'DELEGATION_APPROVAL_REQUIRED') {
     const isApproving = approvingStepId === event.stepId
+    const isRejecting = rejectingStepId === event.stepId
+    const isWorking = isApproving || isRejecting
     return (
       <div className="flex justify-center">
         <div className="rounded-xl bg-amber-500/20 border border-amber-500/40 px-4 py-3 text-amber-900 text-sm shadow-sm shadow-amber-900/10 max-w-[85%]">
           <p className="font-medium">
             Approval Required • {event.subagentName} (step {event.stepIndex})
+          </p>
+          <p className="text-xs mt-1 text-amber-800">
+            Delegated item:{' '}
+            <span className="font-medium">
+              {event.delegatedItem || `Work package for ${event.subagentName}`}
+            </span>
           </p>
           <p className="text-xs mt-1 text-amber-800">
             Review and approve to continue the delegation flow.
@@ -1171,17 +1185,20 @@ function ChatMessage({
               onClick={() => {
                 void onApproveDelegationStep(event.stepId)
               }}
-              disabled={isApproving}
+              disabled={isWorking}
               className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white shadow-md shadow-emerald-900/20 hover:bg-emerald-500 disabled:opacity-50"
             >
               {isApproving ? 'Approving...' : 'Approve Step'}
             </button>
             <button
               type="button"
-              onClick={onOpenDelegationApprovals}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white/80 px-3 py-1.5 text-xs font-medium text-amber-900 border border-amber-500/30 hover:bg-white"
+              onClick={() => {
+                void onRejectDelegationStep(event.stepId)
+              }}
+              disabled={isWorking}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-medium text-white shadow-md shadow-rose-900/20 hover:bg-rose-500 disabled:opacity-50"
             >
-              Open Delegations
+              {isRejecting ? 'Rejecting...' : 'Reject Step'}
             </button>
           </div>
         </div>
@@ -1204,13 +1221,6 @@ function ChatMessage({
       <div className="flex justify-center">
         <div className="rounded-xl bg-amber-500/20 border border-amber-500/40 px-4 py-3 text-amber-900 text-sm font-medium shadow-sm shadow-amber-900/10 max-w-[85%]">
           <p>Session Pending: {event.reason}</p>
-          <button
-            type="button"
-            onClick={onOpenDelegationApprovals}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-white/80 px-3 py-1.5 text-xs font-medium text-amber-900 border border-amber-500/30 hover:bg-white"
-          >
-            Open Delegations
-          </button>
         </div>
       </div>
     )
