@@ -223,7 +223,7 @@ function UploadZone({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/60 backdrop-blur-sm p-5 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-2xl hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-200">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-sm p-5 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 hover:shadow-2xl hover:shadow-slate-200/60 dark:hover:shadow-slate-900/60 transition-all duration-200">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-900 dark:text-white">
         <svg
           className="w-5 h-5 text-blue-600 dark:text-blue-400"
@@ -383,7 +383,7 @@ function FileSummary({
 
   if (!status) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-sm p-5 shadow-lg shadow-slate-200/60 h-full flex flex-col justify-center">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 backdrop-blur-sm p-5 shadow-lg shadow-slate-200/60 h-full flex flex-col justify-center">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-900">
           <svg
             className="w-5 h-5 text-blue-600"
@@ -423,7 +423,7 @@ function FileSummary({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-sm p-5 shadow-lg shadow-slate-200/60 hover:shadow-xl hover:shadow-slate-200/70 transition-all duration-200">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 backdrop-blur-sm p-5 shadow-lg shadow-slate-200/60 hover:shadow-xl hover:shadow-slate-200/70 transition-all duration-200">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-900">
         <svg
           className="w-5 h-5 text-blue-600"
@@ -575,7 +575,7 @@ function FileHistory({
   onReplay: (routingRunId: string) => void
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-sm p-5 shadow-lg shadow-slate-200/60">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 backdrop-blur-sm p-5 shadow-lg shadow-slate-200/60">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center gap-2 text-slate-900">
           <svg
@@ -796,7 +796,7 @@ function SwarmChatPanel({
   }, [events])
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white backdrop-blur-sm shadow-lg shadow-slate-200/60 flex flex-col h-full min-h-[600px]">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 backdrop-blur-sm shadow-lg shadow-slate-200/60 flex flex-col h-full min-h-[600px]">
       {/* Header */}
       <div className="p-4 border-b border-slate-200">
         <div className="flex items-center justify-between">

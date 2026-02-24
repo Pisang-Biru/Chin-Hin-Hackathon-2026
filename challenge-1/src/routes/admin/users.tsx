@@ -49,7 +49,9 @@ function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null)
   const [users, setUsers] = useState<UserItem[]>([])
   const [businessUnits, setBusinessUnits] = useState<BusinessUnitOption[]>([])
-  const [editing, setEditing] = useState<Partial<Record<string, EditableUserState>>>({})
+  const [editing, setEditing] = useState<
+    Partial<Record<string, EditableUserState>>
+  >({})
 
   const [createEmail, setCreateEmail] = useState('')
   const [createName, setCreateName] = useState('')
@@ -66,7 +68,9 @@ function AdminUsersPage() {
 
     try {
       const response = await fetch('/api/admin/users')
-      const payload = (await response.json()) as UsersResponse & { error?: string }
+      const payload = (await response.json()) as UsersResponse & {
+        error?: string
+      }
       if (!response.ok) {
         setError(payload.error || 'Failed to load users.')
         return
@@ -86,7 +90,11 @@ function AdminUsersPage() {
         ),
       )
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Failed to load users.')
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Failed to load users.',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -116,7 +124,10 @@ function AdminUsersPage() {
           name: createName,
           password: createPassword,
           role: createRole,
-          primaryBusinessUnitId: createRole === 'bu_user' ? emptyStringToNull(createPrimaryBu) : null,
+          primaryBusinessUnitId:
+            createRole === 'bu_user'
+              ? emptyStringToNull(createPrimaryBu)
+              : null,
         }),
       })
       const payload = (await response.json()) as { error?: string }
@@ -133,7 +144,11 @@ function AdminUsersPage() {
       setCreatePrimaryBu('')
       await loadUsers()
     } catch (createError) {
-      setError(createError instanceof Error ? createError.message : 'Failed to create user.')
+      setError(
+        createError instanceof Error
+          ? createError.message
+          : 'Failed to create user.',
+      )
     } finally {
       setIsCreating(false)
     }
@@ -152,7 +167,8 @@ function AdminUsersPage() {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         role: value.role,
-        primaryBusinessUnitId: value.role === 'bu_user' ? value.primaryBusinessUnitId : null,
+        primaryBusinessUnitId:
+          value.role === 'bu_user' ? value.primaryBusinessUnitId : null,
       }),
     })
     const payload = (await response.json()) as { error?: string }
@@ -176,7 +192,14 @@ function AdminUsersPage() {
     return (
       <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center px-6">
         <p className="text-slate-600 dark:text-slate-300">
-          You are not signed in. <Link to="/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:underline transition-colors">Go to login</Link>.
+          You are not signed in.{' '}
+          <Link
+            to="/login"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 hover:underline transition-colors"
+          >
+            Go to login
+          </Link>
+          .
         </p>
       </main>
     )
@@ -189,7 +212,9 @@ function AdminUsersPage() {
           <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 flex items-center justify-center">
             <span className="text-3xl">🔒</span>
           </div>
-          <p className="text-red-600 dark:text-red-300">Forbidden. Admin role required.</p>
+          <p className="text-red-600 dark:text-red-300">
+            Forbidden. Admin role required.
+          </p>
         </div>
       </main>
     )
@@ -198,51 +223,66 @@ function AdminUsersPage() {
   return (
     <main className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-10">
       <div className="max-w-6xl mx-auto space-y-8">
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/60 backdrop-blur-sm p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50">
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-sm p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50">
           <div>
             <h1 className="text-2xl font-semibold mb-2">User Management</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">Create new users and manage their roles and business units.</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
+              Create new users and manage their roles and business units.
+            </p>
           </div>
 
-          <form onSubmit={createUser} className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-5 items-end">
+          <form
+            onSubmit={createUser}
+            className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-5 items-end"
+          >
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Name</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Name
+              </label>
               <input
                 placeholder="John Doe"
                 value={createName}
                 onChange={(event) => setCreateName(event.target.value)}
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
                 required
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Email
+              </label>
               <input
                 type="email"
                 placeholder="john@example.com"
                 value={createEmail}
                 onChange={(event) => setCreateEmail(event.target.value)}
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
                 required
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Password
+              </label>
               <input
                 type="password"
                 placeholder="••••••••"
                 value={createPassword}
                 onChange={(event) => setCreatePassword(event.target.value)}
-                className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
                 required
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Role</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Role
+              </label>
               <select
                 value={createRole}
-                onChange={(event) => setCreateRole(event.target.value as AppRole)}
-                className="w-full appearance-none rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer"
+                onChange={(event) =>
+                  setCreateRole(event.target.value as AppRole)
+                }
+                className="w-full appearance-none rounded-xl border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-4 py-2.5 text-sm focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer"
               >
                 <option value="bu_user">BU User</option>
                 <option value="synergy">Synergy</option>
@@ -250,12 +290,14 @@ function AdminUsersPage() {
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Primary BU</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Primary BU
+              </label>
               <select
                 value={createPrimaryBu}
                 onChange={(event) => setCreatePrimaryBu(event.target.value)}
                 disabled={createRole !== 'bu_user'}
-                className="w-full appearance-none rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-2.5 text-sm disabled:opacity-50 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full appearance-none rounded-xl border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-4 py-2.5 text-sm disabled:opacity-50 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:cursor-not-allowed cursor-pointer"
               >
                 <option value="">Select BU</option>
                 {businessUnits.map((bu) => (
@@ -285,23 +327,39 @@ function AdminUsersPage() {
           </form>
           {error ? (
             <div className="mt-4 flex items-center gap-3 p-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 shadow-sm dark:shadow-red-900/10">
-              <span className="text-red-600 dark:text-red-300 text-sm">{error}</span>
+              <span className="text-red-600 dark:text-red-300 text-sm">
+                {error}
+              </span>
             </div>
           ) : null}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/60 backdrop-blur-sm p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden">
-          <h2 className="text-xl font-semibold mb-6">Users ({sortedUsers.length})</h2>
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-sm p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden">
+          <h2 className="text-xl font-semibold mb-6">
+            Users ({sortedUsers.length})
+          </h2>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-sm">
               <thead>
                 <tr className="text-left border-b border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/80">
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Name</th>
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Email</th>
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Role</th>
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Primary BU</th>
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Created</th>
-                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">Action</th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+                    Name
+                  </th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+                    Role
+                  </th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+                    Primary BU
+                  </th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+                    Created
+                  </th>
+                  <th className="px-4 py-3 text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-700/30">
@@ -312,11 +370,18 @@ function AdminUsersPage() {
                   }
 
                   return (
-                    <tr key={user.id} className="hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors duration-150 align-top">
+                    <tr
+                      key={user.id}
+                      className="hover:bg-slate-100 dark:hover:bg-slate-700/30 transition-colors duration-150 align-top"
+                    >
                       <td className="px-4 py-3">
-                        <span className="font-medium text-slate-900 dark:text-white">{user.name}</span>
+                        <span className="font-medium text-slate-900 dark:text-white">
+                          {user.name}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{user.email}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                        {user.email}
+                      </td>
                       <td className="px-4 py-3">
                         <select
                           value={editor.role}
@@ -328,11 +393,13 @@ function AdminUsersPage() {
                                 ...editor,
                                 role: nextRole,
                                 primaryBusinessUnitId:
-                                  nextRole === 'bu_user' ? editor.primaryBusinessUnitId : null,
+                                  nextRole === 'bu_user'
+                                    ? editor.primaryBusinessUnitId
+                                    : null,
                               },
                             }))
                           }}
-                          className="appearance-none rounded-lg border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-3 py-2 text-sm focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer"
+                          className="appearance-none rounded-lg border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-3 py-2 text-sm focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer"
                         >
                           <option value="bu_user">BU User</option>
                           <option value="synergy">Synergy</option>
@@ -348,11 +415,13 @@ function AdminUsersPage() {
                               ...current,
                               [user.id]: {
                                 ...editor,
-                                primaryBusinessUnitId: emptyStringToNull(event.target.value),
+                                primaryBusinessUnitId: emptyStringToNull(
+                                  event.target.value,
+                                ),
                               },
                             }))
                           }
-                          className="appearance-none rounded-lg border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-3 py-2 text-sm disabled:opacity-50 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:cursor-not-allowed cursor-pointer"
+                          className="appearance-none rounded-lg border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-3 py-2 text-sm disabled:opacity-50 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:cursor-not-allowed cursor-pointer"
                         >
                           <option value="">Select BU</option>
                           {businessUnits.map((bu) => (

@@ -2,7 +2,6 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { authClient } from '@/lib/auth-client'
-import { getAgentAvatar } from '@/lib/swarm/agent-avatar'
 
 type ApprovalStatus =
   | 'PENDING_SYNERGY'
@@ -79,10 +78,6 @@ type ApprovalsResponse = {
 export const Route = createFileRoute('/synergy/approvals')({
   component: SynergyApprovalsPage,
 })
-
-function toAgentLabel(agentId: string): string {
-  return getAgentAvatar(agentId).label
-}
 
 function SynergyApprovalsPage() {
   const { data: session, isPending } = authClient.useSession()
@@ -216,7 +211,7 @@ function SynergyApprovalsPage() {
   return (
     <main className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white px-6 py-10">
       <div className="max-w-full mx-auto space-y-6">
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/60 backdrop-blur-sm p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50">
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-sm p-6 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-semibold mb-2">
@@ -242,7 +237,7 @@ function SynergyApprovalsPage() {
               onChange={(event) =>
                 setStatusFilter(event.target.value as ApprovalStatus)
               }
-              className="appearance-none rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-2.5 pr-10 text-sm focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer min-w-[180px]"
+              className="appearance-none rounded-xl border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-4 py-2.5 pr-10 text-sm focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 cursor-pointer min-w-[180px]"
             >
               <option value="PENDING_SYNERGY">PENDING_SYNERGY</option>
               <option value="APPROVED">APPROVED</option>
@@ -262,9 +257,9 @@ function SynergyApprovalsPage() {
           ) : null}
         </section>
 
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/60 backdrop-blur-sm shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden">
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-sm shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1400px] text-sm">
+            <table className="w-full min-w-[1200px] text-sm">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/80 text-left text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
                   <th className="px-4 py-4">Assignment</th>
@@ -272,7 +267,6 @@ function SynergyApprovalsPage() {
                   <th className="px-4 py-4">BU</th>
                   <th className="px-4 py-4">Recommendation</th>
                   <th className="px-4 py-4">SKU Proposals</th>
-                  <th className="px-4 py-4">Agent Conversation</th>
                   <th className="px-4 py-4">Decision Reason</th>
                   <th className="px-4 py-4">Artifacts</th>
                   <th className="px-4 py-4">Action</th>
@@ -389,66 +383,6 @@ function SynergyApprovalsPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 max-w-[380px]">
-                      {assignment.agentConversation.length > 0 ? (
-                        <details className="group rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors">
-                          <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-blue-700 hover:text-blue-600 transition-colors select-none">
-                            View {assignment.agentConversation.length} messages
-                          </summary>
-                          <div className="mt-2 px-3 pb-3 space-y-2">
-                            {assignment.agentConversation.map((message) => (
-                              <article
-                                key={message.id}
-                                className="rounded-lg border border-slate-200 bg-white px-3 py-2"
-                              >
-                                <div className="flex items-center gap-2 mb-1.5">
-                                  <img
-                                    src={
-                                      getAgentAvatar(message.agentId).imagePath
-                                    }
-                                    alt={toAgentLabel(message.agentId)}
-                                    className="h-6 w-6 rounded-md border border-slate-200"
-                                  />
-                                  {message.recipientId ? (
-                                    <>
-                                      <span className="text-slate-500">→</span>
-                                      <img
-                                        src={
-                                          getAgentAvatar(message.recipientId)
-                                            .imagePath
-                                        }
-                                        alt={toAgentLabel(message.recipientId)}
-                                        className="h-6 w-6 rounded-md border border-slate-200"
-                                      />
-                                    </>
-                                  ) : null}
-                                  <p className="text-[11px] text-blue-700 font-medium">
-                                    {toAgentLabel(message.agentId)}
-                                    {message.recipientId
-                                      ? ` → ${toAgentLabel(message.recipientId)}`
-                                      : ''}
-                                  </p>
-                                </div>
-                                <p className="text-[11px] text-slate-500">
-                                  {new Date(message.createdAt).toLocaleString()}{' '}
-                                  |{' '}
-                                  <span className="text-slate-500">
-                                    {message.messageType}
-                                  </span>
-                                </p>
-                                <p className="text-xs text-slate-700 mt-1.5 leading-relaxed">
-                                  {message.content}
-                                </p>
-                              </article>
-                            ))}
-                          </div>
-                        </details>
-                      ) : (
-                        <span className="text-xs text-slate-500">
-                          No conversation logs
-                        </span>
-                      )}
-                    </td>
                     <td className="px-4 py-3 text-xs text-slate-700 max-w-[240px]">
                       {assignment.status === 'CANCELED' ? (
                         assignment.synergyDecisionReason || 'No reason'
@@ -521,7 +455,7 @@ function SynergyApprovalsPage() {
                   <tr>
                     <td
                       className="px-4 py-12 text-slate-500 text-center"
-                      colSpan={9}
+                      colSpan={8}
                     >
                       No assignments found for the selected filter.
                     </td>

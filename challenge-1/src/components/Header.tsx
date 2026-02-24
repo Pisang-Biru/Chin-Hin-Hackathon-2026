@@ -27,7 +27,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl shadow-sm shadow-slate-200/80">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-slate-50/95 backdrop-blur-xl shadow-sm shadow-slate-200/80">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center">
             <button
@@ -59,11 +59,11 @@ export default function Header() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 h-full w-80 bg-white/95 backdrop-blur-xl text-slate-900 shadow-2xl shadow-slate-300/60 z-50 transform transition-all duration-300 ease-in-out flex flex-col border-r border-slate-200 ${
+        className={`fixed top-0 left-0 h-full w-80 bg-slate-50/95 backdrop-blur-xl text-slate-900 shadow-2xl shadow-slate-300/60 z-50 transform transition-all duration-300 ease-in-out flex flex-col border-r border-slate-200 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-white/80">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50/80">
           <div className="ml-4 text-lg font-bold">
             <Link to="/" className="flex items-center gap-2">
               <span className="text-blue-700">Chin-Hin</span>
@@ -169,7 +169,7 @@ export default function Header() {
           ) : null}
         </nav>
 
-        <div className="p-4 border-t border-slate-200 bg-white/80 shadow-sm shadow-slate-200/80">
+        <div className="p-4 border-t border-slate-200 bg-slate-50/80 shadow-sm shadow-slate-200/80">
           <BetterAuthHeader />
         </div>
       </aside>

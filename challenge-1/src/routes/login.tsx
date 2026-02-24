@@ -59,7 +59,9 @@ export function LoginPage() {
       const role = (result.data.user as { role?: string }).role
       await navigate({ to: getRouteByRole(role) })
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : 'Login failed.')
+      setError(
+        requestError instanceof Error ? requestError.message : 'Login failed.',
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -67,10 +69,11 @@ export function LoginPage() {
 
   return (
     <main className="min-h-screen bg-slate-100 dark:bg-slate-900 flex items-center justify-center px-6 py-12">
-      <section className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-white dark:bg-slate-800/60 backdrop-blur-sm p-8 shadow-2xl shadow-slate-200/50 dark:shadow-slate-900/50">
+      <section className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/60 backdrop-blur-sm p-8 shadow-2xl shadow-slate-200/50 dark:shadow-slate-900/50">
         <div className="text-center mb-8">
-          
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">Welcome</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
+            Welcome
+          </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm">
             Sign in to access the Chin-Hin CRM workspace
           </p>
@@ -84,7 +87,10 @@ export function LoginPage() {
 
         <form onSubmit={onSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="email">
+            <label
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              htmlFor="email"
+            >
               Email Address
             </label>
             <input
@@ -94,12 +100,15 @@ export function LoginPage() {
               onChange={(event) => setEmail(event.target.value)}
               required
               placeholder="you@example.com"
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="password">
+            <label
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              htmlFor="password"
+            >
               Password
             </label>
             <input
@@ -109,13 +118,15 @@ export function LoginPage() {
               onChange={(event) => setPassword(event.target.value)}
               required
               placeholder="••••••••"
-              className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-white dark:bg-slate-900/70 px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+              className="w-full rounded-xl border border-slate-300 dark:border-slate-600/50 bg-slate-50 dark:bg-slate-900/70 px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 shadow-sm dark:shadow-inner shadow-slate-200 dark:shadow-slate-950/20 focus:border-blue-500 dark:focus:bg-slate-900/90 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
             />
           </div>
 
           {error ? (
             <div className="flex items-start gap-3 p-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 shadow-sm dark:shadow-red-900/10">
-              <span className="text-red-600 dark:text-red-400 text-sm">{error}</span>
+              <span className="text-red-600 dark:text-red-400 text-sm">
+                {error}
+              </span>
             </div>
           ) : null}
 
