@@ -814,6 +814,9 @@ function SwarmChatPanel({
   leadId,
   routingRunId,
   typingAgents,
+  approvingStepId,
+  onApproveDelegationStep,
+  onOpenDelegationApprovals,
   onStop,
 }: {
   events: SwarmPreviewEvent[]
@@ -825,6 +828,9 @@ function SwarmChatPanel({
   leadId: string | null
   routingRunId: string | null
   typingAgents: string[]
+  approvingStepId: string | null
+  onApproveDelegationStep: (stepId: string) => Promise<void>
+  onOpenDelegationApprovals: () => void
   onStop: () => void
 }) {
   const chatEndRef = useRef<HTMLDivElement>(null)
@@ -966,7 +972,13 @@ function SwarmChatPanel({
           events
             .filter((e) => e.type !== 'HEARTBEAT' && e.type !== 'AGENT_TYPING')
             .map((event, index) => (
-              <ChatMessage key={`${event.type}-${index}`} event={event} />
+              <ChatMessage
+                key={`${event.type}-${index}`}
+                event={event}
+                approvingStepId={approvingStepId}
+                onApproveDelegationStep={onApproveDelegationStep}
+                onOpenDelegationApprovals={onOpenDelegationApprovals}
+              />
             ))
         )}
 
@@ -982,7 +994,17 @@ function SwarmChatPanel({
 }
 
 // Chat Message Component
-function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
+function ChatMessage({
+  event,
+  approvingStepId,
+  onApproveDelegationStep,
+  onOpenDelegationApprovals,
+}: {
+  event: SwarmPreviewEvent
+  approvingStepId: string | null
+  onApproveDelegationStep: (stepId: string) => Promise<void>
+  onOpenDelegationApprovals: () => void
+}) {
   const getAvatar = getAgentAvatar
   const getLabel = getAgentLabel
 
@@ -1133,11 +1155,36 @@ function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
   }
 
   if (event.type === 'DELEGATION_APPROVAL_REQUIRED') {
+    const isApproving = approvingStepId === event.stepId
     return (
       <div className="flex justify-center">
-        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-800 text-sm font-medium shadow-sm shadow-amber-900/10">
-          Approval Required • {event.subagentName} (step {event.stepIndex})
-        </span>
+        <div className="rounded-xl bg-amber-500/20 border border-amber-500/40 px-4 py-3 text-amber-900 text-sm shadow-sm shadow-amber-900/10 max-w-[85%]">
+          <p className="font-medium">
+            Approval Required • {event.subagentName} (step {event.stepIndex})
+          </p>
+          <p className="text-xs mt-1 text-amber-800">
+            Review and approve to continue the delegation flow.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                void onApproveDelegationStep(event.stepId)
+              }}
+              disabled={isApproving}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white shadow-md shadow-emerald-900/20 hover:bg-emerald-500 disabled:opacity-50"
+            >
+              {isApproving ? 'Approving...' : 'Approve Step'}
+            </button>
+            <button
+              type="button"
+              onClick={onOpenDelegationApprovals}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-white/80 px-3 py-1.5 text-xs font-medium text-amber-900 border border-amber-500/30 hover:bg-white"
+            >
+              Open Delegations
+            </button>
+          </div>
+        </div>
       </div>
     )
   }
@@ -1155,9 +1202,16 @@ function ChatMessage({ event }: { event: SwarmPreviewEvent }) {
   if (event.type === 'SESSION_PENDING') {
     return (
       <div className="flex justify-center">
-        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-900 text-sm font-medium shadow-sm shadow-amber-900/10">
-          Session Pending: {event.reason}
-        </span>
+        <div className="rounded-xl bg-amber-500/20 border border-amber-500/40 px-4 py-3 text-amber-900 text-sm font-medium shadow-sm shadow-amber-900/10 max-w-[85%]">
+          <p>Session Pending: {event.reason}</p>
+          <button
+            type="button"
+            onClick={onOpenDelegationApprovals}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-white/80 px-3 py-1.5 text-xs font-medium text-amber-900 border border-amber-500/30 hover:bg-white"
+          >
+            Open Delegations
+          </button>
+        </div>
       </div>
     )
   }
@@ -1230,6 +1284,9 @@ function LeadsUploadPage() {
   const [livePreviewEvents, setLivePreviewEvents] = useState<
     SwarmPreviewEvent[]
   >([])
+  const [approvingDelegationStepId, setApprovingDelegationStepId] = useState<
+    string | null
+  >(null)
   const [typingAgentIds, setTypingAgentIds] = useState<string[]>([])
   const [livePreviewWorkingText, setLivePreviewWorkingText] = useState(
     'Waiting for swarm updates',
@@ -1613,6 +1670,51 @@ function LeadsUploadPage() {
     }
   }
 
+  function openDelegationApprovals() {
+    window.open('/synergy/approvals', '_blank', 'noopener,noreferrer')
+  }
+
+  async function approveDelegationStep(stepId: string) {
+    setApprovingDelegationStepId(stepId)
+    setLivePreviewError(null)
+
+    try {
+      const response = await fetch(`/api/synergy/delegations/${stepId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status: 'APPROVED' }),
+      })
+      const payload = (await response.json()) as {
+        error?: string
+        details?: string
+      }
+      if (!response.ok) {
+        setLivePreviewError(
+          payload.error || payload.details || 'Failed to approve delegation step.',
+        )
+        return
+      }
+
+      setLivePreviewWorkingText('Delegation approved. Loading next update')
+
+      if (livePreviewRoutingRunId) {
+        startLivePreview(livePreviewRoutingRunId)
+      } else if (livePreviewLeadId) {
+        startLiveDelegation(livePreviewLeadId)
+      } else {
+        void loadDocuments()
+      }
+    } catch (error) {
+      setLivePreviewError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to approve delegation step.',
+      )
+    } finally {
+      setApprovingDelegationStepId(null)
+    }
+  }
+
   useEffect(() => {
     if (!polling || !status?.documentId) return
 
@@ -1826,6 +1928,9 @@ function LeadsUploadPage() {
               leadId={livePreviewLeadId}
               routingRunId={livePreviewRoutingRunId}
               typingAgents={typingAgentIds}
+              approvingStepId={approvingDelegationStepId}
+              onApproveDelegationStep={approveDelegationStep}
+              onOpenDelegationApprovals={openDelegationApprovals}
               onStop={stopLivePreview}
             />
           </div>

@@ -162,6 +162,91 @@ function deriveBusinessUnitCode(agentId: string, recipientId: string | null): st
   return source.replace(/_agent$/i, '').toUpperCase()
 }
 
+function normalizeTextValue(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function formatDelegationBrief(input: {
+  subagentName: string
+  stepIndex: number
+  requestPayload: Record<string, unknown>
+}): string {
+  const { subagentName, stepIndex, requestPayload } = input
+
+  if (subagentName === 'bu_selector') {
+    const lead = (requestPayload.lead as Record<string, unknown> | undefined) ?? {}
+    const projectName =
+      normalizeTextValue(lead.projectName) ?? 'Unnamed project'
+    const location = normalizeTextValue(lead.locationText) ?? 'Location not specified'
+    const factsCount =
+      typeof requestPayload.factsCount === 'number' ? requestPayload.factsCount : 0
+    const businessUnitCount =
+      typeof requestPayload.businessUnitCount === 'number'
+        ? requestPayload.businessUnitCount
+        : 0
+    const similarLeadSignals = Array.isArray(requestPayload.similarLeadSignals)
+      ? requestPayload.similarLeadSignals
+      : []
+    const similarLeadSummary = similarLeadSignals
+      .slice(0, 3)
+      .map((row) => {
+        if (!row || typeof row !== 'object') {
+          return null
+        }
+        const project = normalizeTextValue(
+          (row as Record<string, unknown>).projectName,
+        )
+        return project
+      })
+      .filter((row): row is string => Boolean(row))
+
+    return [
+      `Business update: BU shortlisting brief is ready (step ${stepIndex}).`,
+      `Project: ${projectName}.`,
+      `Location: ${location}.`,
+      `Available lead facts: ${factsCount}.`,
+      `Business units in scope: ${businessUnitCount}.`,
+      similarLeadSummary.length > 0
+        ? `Comparable leads reviewed: ${similarLeadSummary.join('; ')}.`
+        : 'Comparable leads reviewed: none.',
+      'Action: approve this delegation to generate BU recommendations.',
+    ].join('\n')
+  }
+
+  if (subagentName === 'sku_selector') {
+    const buRecommendations = Array.isArray(requestPayload.buRecommendations)
+      ? requestPayload.buRecommendations
+      : []
+    const buCodes = buRecommendations
+      .map((item) => {
+        if (!item || typeof item !== 'object') {
+          return null
+        }
+        const record = item as Record<string, unknown>
+        return normalizeTextValue(record.businessUnitCode)
+      })
+      .filter((row): row is string => Boolean(row))
+
+    return [
+      `Business update: SKU planning brief is ready (step ${stepIndex}).`,
+      buCodes.length > 0
+        ? `Approved business units: ${buCodes.join(', ')}.`
+        : 'Approved business units: none captured.',
+      'Action: approve this delegation to generate SKU proposals.',
+    ].join('\n')
+  }
+
+  return [
+    `Business update: delegation brief ready for ${subagentName} (step ${stepIndex}).`,
+    'Action: approve this delegation to continue routing.',
+  ].join('\n')
+}
+
 async function emitSessionAgentMessages(input: {
   onEvent: RunDeepAgentsRoutingInput['onEvent'] | HandleDelegationDecisionInput['onEvent']
   leadId: string
@@ -766,11 +851,11 @@ export async function runDeepAgentsRoutingForLead(
   })
 
   if (sessionEnvelope.status === 'PENDING_APPROVAL' && sessionEnvelope.pendingStep) {
-    const pendingDetails = JSON.stringify(
-      sessionEnvelope.pendingStep.requestPayload,
-      null,
-      2,
-    )
+    const brief = formatDelegationBrief({
+      subagentName: sessionEnvelope.pendingStep.subagentName,
+      stepIndex: sessionEnvelope.pendingStep.stepIndex,
+      requestPayload: sessionEnvelope.pendingStep.requestPayload,
+    })
     await emitEvent(input.onEvent, {
       type: 'AGENT_MESSAGE',
       leadId: input.leadId,
@@ -778,11 +863,12 @@ export async function runDeepAgentsRoutingForLead(
       businessUnitCode: 'SYSTEM',
       agentId: 'synergy_coordinator',
       recipientId: null,
-      messageType: 'DELEGATION_DEBUG',
-      content: `Pending ${sessionEnvelope.pendingStep.subagentName} (step ${sessionEnvelope.pendingStep.stepIndex}). Payload:\n${pendingDetails}`,
+      messageType: 'DELEGATION_BRIEF',
+      content: brief,
       evidenceRefs: {
         sessionId,
         stepId: sessionEnvelope.pendingStep.stepId,
+        requestPayload: sessionEnvelope.pendingStep.requestPayload,
       },
       timestamp: new Date().toISOString(),
     })
@@ -805,7 +891,7 @@ export async function runDeepAgentsRoutingForLead(
       sessionId,
       reason:
         sessionEnvelope.error ||
-        `Awaiting approval for ${sessionEnvelope.pendingStep.subagentName}. Open Synergy > Delegation Approvals to continue.`,
+        `Awaiting your approval for ${sessionEnvelope.pendingStep.subagentName}.`,
       timestamp: new Date().toISOString(),
     })
 
@@ -923,7 +1009,11 @@ export async function handleDeepAgentDelegationDecision(
   })
 
   if (envelope.status === 'PENDING_APPROVAL' && envelope.pendingStep) {
-    const pendingDetails = JSON.stringify(envelope.pendingStep.requestPayload, null, 2)
+    const brief = formatDelegationBrief({
+      subagentName: envelope.pendingStep.subagentName,
+      stepIndex: envelope.pendingStep.stepIndex,
+      requestPayload: envelope.pendingStep.requestPayload,
+    })
     await emitEvent(input.onEvent, {
       type: 'AGENT_MESSAGE',
       leadId: step.leadId,
@@ -931,11 +1021,12 @@ export async function handleDeepAgentDelegationDecision(
       businessUnitCode: 'SYSTEM',
       agentId: 'synergy_coordinator',
       recipientId: null,
-      messageType: 'DELEGATION_DEBUG',
-      content: `Next pending ${envelope.pendingStep.subagentName} (step ${envelope.pendingStep.stepIndex}). Payload:\n${pendingDetails}`,
+      messageType: 'DELEGATION_BRIEF',
+      content: brief,
       evidenceRefs: {
         sessionId: step.sessionId,
         stepId: envelope.pendingStep.stepId,
+        requestPayload: envelope.pendingStep.requestPayload,
       },
       timestamp: new Date().toISOString(),
     })
