@@ -21,6 +21,11 @@ type LiveRoutingEvent =
       scoredBusinessUnits: number
       timestamp: string
     }
+  | {
+      type: 'HEARTBEAT'
+      timestamp: string
+      stage: string
+    }
 
 function formatSseData(payload: LiveRoutingEvent): string {
   return `data: ${JSON.stringify(payload)}\n\n`
@@ -42,6 +47,7 @@ export const Route = createFileRoute('/api/leads/$leadId/reroute-live')({
         const stream = new ReadableStream({
           start(controller) {
             let isClosed = false
+            let heartbeatTimer: ReturnType<typeof setInterval> | null = null
 
             const send = (payload: LiveRoutingEvent) => {
               if (isClosed) {
@@ -55,6 +61,10 @@ export const Route = createFileRoute('/api/leads/$leadId/reroute-live')({
                 return
               }
               isClosed = true
+              if (heartbeatTimer) {
+                clearInterval(heartbeatTimer)
+                heartbeatTimer = null
+              }
               controller.close()
             }
 
@@ -63,6 +73,13 @@ export const Route = createFileRoute('/api/leads/$leadId/reroute-live')({
               leadId,
               timestamp: new Date().toISOString(),
             })
+            heartbeatTimer = setInterval(() => {
+              send({
+                type: 'HEARTBEAT',
+                timestamp: new Date().toISOString(),
+                stage: 'routing',
+              })
+            }, 1_200)
 
             void (async () => {
               try {

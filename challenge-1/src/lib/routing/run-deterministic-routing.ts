@@ -272,7 +272,53 @@ export async function runDeterministicRoutingForLead(
   }
 
   const orchestrationByBusinessUnit = new Map<string, BuOrchestrationOutput>()
+  if (ranked.length === 0) {
+    await emitRoutingEvent(onEvent, {
+      type: 'AGENT_MESSAGE',
+      leadId,
+      routingRunId: routingRun.id,
+      businessUnitCode: 'SYSTEM',
+      agentId: 'synergy_router',
+      recipientId: null,
+      messageType: 'ROUTING_NOTE',
+      content:
+        activeRuleSets.length === 0
+          ? 'No active BU rule sets found. Routing finished with zero recommendations.'
+          : 'No BU met the deterministic threshold for this lead.',
+      evidenceRefs: {
+        activeRuleSets: activeRuleSets.length,
+        scoredBusinessUnits: scores.length,
+      },
+      timestamp: new Date().toISOString(),
+    })
+  }
+
   for (const recommendation of ranked) {
+    await emitRoutingEvent(onEvent, {
+      type: 'RECOMMENDATION_SELECTED',
+      leadId,
+      routingRunId: routingRun.id,
+      businessUnitId: recommendation.businessUnitId,
+      businessUnitCode: recommendation.businessUnitCode,
+      businessUnitName: recommendation.businessUnitName,
+      role: recommendation.role,
+      finalScore: recommendation.finalScore,
+      confidence: recommendation.confidence,
+      reasonSummary: recommendation.reasonSummary,
+      timestamp: new Date().toISOString(),
+    })
+
+    await emitRoutingEvent(onEvent, {
+      type: 'AGENT_TYPING',
+      leadId,
+      routingRunId: routingRun.id,
+      businessUnitCode: recommendation.businessUnitCode,
+      agentId: 'synergy_router',
+      recipientId: `${recommendation.businessUnitCode.toLowerCase()}_agent`,
+      messageType: 'ORCHESTRATION_IN_PROGRESS',
+      timestamp: new Date().toISOString(),
+    })
+
     const orchestration = await orchestrateBuRecommendation(
       {
         businessUnitId: recommendation.businessUnitId,
@@ -288,20 +334,6 @@ export async function runDeterministicRoutingForLead(
     )
 
     orchestrationByBusinessUnit.set(recommendation.businessUnitId, orchestration)
-
-    await emitRoutingEvent(onEvent, {
-      type: 'RECOMMENDATION_SELECTED',
-      leadId,
-      routingRunId: routingRun.id,
-      businessUnitId: recommendation.businessUnitId,
-      businessUnitCode: recommendation.businessUnitCode,
-      businessUnitName: recommendation.businessUnitName,
-      role: recommendation.role,
-      finalScore: recommendation.finalScore,
-      confidence: recommendation.confidence,
-      reasonSummary: recommendation.reasonSummary,
-      timestamp: new Date().toISOString(),
-    })
 
     for (const message of orchestration.agentMessages) {
       await emitRoutingEvent(onEvent, {

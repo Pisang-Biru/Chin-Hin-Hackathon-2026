@@ -118,6 +118,7 @@ type SwarmPreviewEvent =
   | {
       type: 'HEARTBEAT'
       timestamp: string
+      stage?: string
     }
 
 type LeadDocumentListItem = {
@@ -186,6 +187,9 @@ function LeadsUploadPage() {
   const [livePreviewError, setLivePreviewError] = useState<string | null>(null)
   const [livePreviewEvents, setLivePreviewEvents] = useState<SwarmPreviewEvent[]>([])
   const [typingAgentIds, setTypingAgentIds] = useState<string[]>([])
+  const [livePreviewWorkingText, setLivePreviewWorkingText] = useState('Waiting for swarm updates')
+  const [livePreviewLastActivityAt, setLivePreviewLastActivityAt] = useState<number | null>(null)
+  const [livePreviewDots, setLivePreviewDots] = useState(1)
 
   const pollStartRef = useRef<number | null>(null)
   const livePreviewSourceRef = useRef<EventSource | null>(null)
@@ -361,6 +365,60 @@ function LeadsUploadPage() {
     })
   }
 
+  function updateLiveWorkingText(event: SwarmPreviewEvent) {
+    if (event.type === 'HEARTBEAT') {
+      if (event.stage === 'replay') {
+        setLivePreviewWorkingText('Replaying stored swarm conversation')
+        return
+      }
+
+      setLivePreviewWorkingText('Swarm is processing routing and delegation')
+      return
+    }
+
+    if (event.type === 'ROUTING_STARTED') {
+      setLivePreviewWorkingText('Evaluating routing rules and preparing BU handoff')
+      return
+    }
+
+    if (event.type === 'RECOMMENDATION_SELECTED') {
+      setLivePreviewWorkingText(`Delegating ${event.businessUnitCode} agent review`)
+      return
+    }
+
+    if (event.type === 'AGENT_TYPING') {
+      setLivePreviewWorkingText(`${getAgentLabel(event.agentId)} is responding`)
+      return
+    }
+
+    if (event.type === 'AGENT_MESSAGE') {
+      setLivePreviewWorkingText(`${getAgentLabel(event.agentId)} sent an update`)
+      return
+    }
+
+    if (event.type === 'SKU_PROPOSALS') {
+      setLivePreviewWorkingText(`${event.businessUnitCode} is finalizing SKU proposals`)
+      return
+    }
+
+    if (event.type === 'ROUTING_COMPLETED') {
+      setLivePreviewWorkingText('Routing completed')
+      return
+    }
+
+    if (event.type === 'ROUTING_FAILED') {
+      setLivePreviewWorkingText('Routing failed')
+      return
+    }
+
+    if (event.type === 'PREVIEW_SUMMARY') {
+      setLivePreviewWorkingText('Swarm preview summary ready')
+      return
+    }
+
+    setLivePreviewWorkingText('Swarm session opened')
+  }
+
   function stopLivePreview() {
     if (livePreviewSourceRef.current) {
       livePreviewSourceRef.current.close()
@@ -368,6 +426,8 @@ function LeadsUploadPage() {
     }
     setIsLivePreviewing(false)
     setTypingAgentIds([])
+    setLivePreviewLastActivityAt(null)
+    setLivePreviewWorkingText('Waiting for swarm updates')
   }
 
   function startLivePreview(routingRunId: string) {
@@ -376,6 +436,8 @@ function LeadsUploadPage() {
     setLivePreviewRoutingRunId(routingRunId)
     setLivePreviewEvents([])
     setTypingAgentIds([])
+    setLivePreviewWorkingText('Connecting to swarm replay stream')
+    setLivePreviewLastActivityAt(Date.now())
     setIsLivePreviewing(true)
 
     const source = new EventSource(`/api/routing-runs/${routingRunId}/swarm-events`)
@@ -389,6 +451,8 @@ function LeadsUploadPage() {
       } catch {
         return
       }
+      setLivePreviewLastActivityAt(Date.now())
+      updateLiveWorkingText(payload)
 
       if (payload.type === 'HEARTBEAT') {
         return
@@ -440,6 +504,8 @@ function LeadsUploadPage() {
     setLivePreviewRoutingRunId(null)
     setLivePreviewEvents([])
     setTypingAgentIds([])
+    setLivePreviewWorkingText('Connecting to live swarm delegation stream')
+    setLivePreviewLastActivityAt(Date.now())
     setIsLivePreviewing(true)
 
     const source = new EventSource(`/api/leads/${leadId}/reroute-live`)
@@ -453,6 +519,8 @@ function LeadsUploadPage() {
       } catch {
         return
       }
+      setLivePreviewLastActivityAt(Date.now())
+      updateLiveWorkingText(payload)
 
       if ('leadId' in payload) {
         setLivePreviewLeadId(payload.leadId)
@@ -532,6 +600,19 @@ function LeadsUploadPage() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (!isLivePreviewing) {
+      setLivePreviewDots(1)
+      return
+    }
+
+    const timer = setInterval(() => {
+      setLivePreviewDots((previous) => (previous >= 3 ? 1 : previous + 1))
+    }, 450)
+
+    return () => clearInterval(timer)
+  }, [isLivePreviewing])
 
   useEffect(() => {
     if (!status?.leadId || status.parseStatus !== 'NORMALIZED') {
@@ -742,10 +823,27 @@ function LeadsUploadPage() {
 
           {livePreviewError ? <p className="text-sm text-red-300">{livePreviewError}</p> : null}
 
+          {isLivePreviewing ? (
+            <div className="rounded-lg border border-cyan-700/40 bg-cyan-900/20 px-3 py-2 text-xs text-cyan-200 flex items-center justify-between gap-3">
+              <p className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-cyan-300 animate-pulse inline-block" />
+                {livePreviewWorkingText}
+                {'.'.repeat(livePreviewDots)}
+              </p>
+              {livePreviewLastActivityAt ? (
+                <p className="text-cyan-100/80">
+                  Last update {Math.max(0, Math.floor((Date.now() - livePreviewLastActivityAt) / 1000))}s ago
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 max-h-[420px] overflow-y-auto space-y-3">
             {livePreviewEvents.length === 0 ? (
               <p className="text-sm text-slate-400">
-                Start a preview from an extracted lead to see the swarm conversation.
+                {isLivePreviewing
+                  ? 'Swarm session started. Waiting for the first agent message...'
+                  : 'Start a preview from an extracted lead to see the swarm conversation.'}
               </p>
             ) : (
               livePreviewEvents

@@ -84,6 +84,11 @@ type SwarmReplayEvent =
       scoredBusinessUnits: number
       timestamp: string
     }
+  | {
+      type: 'HEARTBEAT'
+      timestamp: string
+      stage: string
+    }
 
 function formatSseData(payload: SwarmReplayEvent): string {
   return `data: ${JSON.stringify(payload)}\n\n`
@@ -166,6 +171,7 @@ export const Route = createFileRoute('/api/routing-runs/$routingRunId/swarm-even
         const stream = new ReadableStream({
           start(controller) {
             let isClosed = false
+            let heartbeatTimer: ReturnType<typeof setInterval> | null = null
 
             const send = (payload: SwarmReplayEvent) => {
               if (isClosed) {
@@ -179,6 +185,10 @@ export const Route = createFileRoute('/api/routing-runs/$routingRunId/swarm-even
                 return
               }
               isClosed = true
+              if (heartbeatTimer) {
+                clearInterval(heartbeatTimer)
+                heartbeatTimer = null
+              }
               controller.close()
             }
 
@@ -187,6 +197,13 @@ export const Route = createFileRoute('/api/routing-runs/$routingRunId/swarm-even
               leadId,
               timestamp: new Date().toISOString(),
             })
+            heartbeatTimer = setInterval(() => {
+              send({
+                type: 'HEARTBEAT',
+                timestamp: new Date().toISOString(),
+                stage: 'replay',
+              })
+            }, 1_200)
 
             void (async () => {
               send({
