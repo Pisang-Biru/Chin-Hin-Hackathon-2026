@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import uuid
 from dataclasses import dataclass, field
 from typing import Any
@@ -47,6 +48,7 @@ class GraphSessionState:
 
 SESSION_STORE: dict[str, GraphSessionState] = {}
 DEEP_AGENT_RUNTIME: Any = None
+LOGGER = logging.getLogger("deep_agents.graph")
 
 
 SYSTEM_POLICY = (
@@ -71,6 +73,7 @@ def initialize_deep_agent(settings: Settings) -> None:
 
     if create_deep_agent is None:
         DEEP_AGENT_RUNTIME = None
+        LOGGER.warning("deepagents package is unavailable; using heuristic fallback.")
         return
 
     try:
@@ -106,6 +109,7 @@ def initialize_deep_agent(settings: Settings) -> None:
         )
     except Exception:
         DEEP_AGENT_RUNTIME = None
+        LOGGER.exception("Failed to initialize Deep Agents runtime; using heuristic fallback.")
 
 
 
@@ -338,6 +342,14 @@ def start_graph_session(request: StartSessionRequest, settings: Settings) -> Ses
             error="Lead snapshot not found.",
         )
         SESSION_STORE[request.sessionId] = failed
+        LOGGER.error(
+            "Session start failed: lead not found.",
+            extra={
+                "session_id": request.sessionId,
+                "lead_id": request.leadId,
+                "routing_run_id": request.routingRunId,
+            },
+        )
         return _session_to_envelope(failed)
 
     similar = find_similar_leads(_normalize_fact_map(lead_snapshot.get("facts", [])), settings)
@@ -375,6 +387,18 @@ def start_graph_session(request: StartSessionRequest, settings: Settings) -> Ses
     )
 
     SESSION_STORE[request.sessionId] = state
+    LOGGER.info(
+        "Session started and waiting for approval.",
+        extra={
+            "session_id": request.sessionId,
+            "routing_run_id": request.routingRunId,
+            "lead_id": request.leadId,
+            "pending_step_id": first_step.stepId,
+            "pending_subagent": first_step.subagentName,
+            "facts_count": len(lead_snapshot.get("facts", [])),
+            "business_unit_count": len(business_units),
+        },
+    )
     return _session_to_envelope(state)
 
 
@@ -387,11 +411,34 @@ def apply_step_decision(
 ) -> SessionEnvelope:
     state = SESSION_STORE.get(session_id)
     if state is None:
+        LOGGER.warning(
+            "Decision received for unknown session.",
+            extra={"session_id": session_id, "step_id": step_id},
+        )
         raise ValueError("Session not found.")
 
     pending = state.pending_step
     if pending is None or pending.stepId != step_id:
+        LOGGER.warning(
+            "Decision step mismatch.",
+            extra={
+                "session_id": session_id,
+                "requested_step_id": step_id,
+                "pending_step_id": pending.stepId if pending else None,
+            },
+        )
         raise ValueError("Pending delegation step not found.")
+
+    LOGGER.info(
+        "Applying delegation decision.",
+        extra={
+            "session_id": session_id,
+            "step_id": step_id,
+            "subagent": pending.subagentName,
+            "decision": decision.decision,
+            "reviewer": decision.reviewerId,
+        },
+    )
 
     state.agent_messages.append(
         AgentMessage(
@@ -411,6 +458,15 @@ def apply_step_decision(
         state.status = "REJECTED"
         state.pending_step = None
         state.error = decision.reason or f"Delegation rejected by {decision.reviewerId}."
+        LOGGER.info(
+            "Delegation rejected.",
+            extra={
+                "session_id": session_id,
+                "step_id": step_id,
+                "reviewer": decision.reviewerId,
+                "reason": decision.reason or "",
+            },
+        )
         return _session_to_envelope(state)
 
     if pending.subagentName == "bu_selector":
@@ -431,6 +487,10 @@ def apply_step_decision(
             state.status = "FAILED"
             state.pending_step = None
             state.error = "No eligible business unit recommendations generated."
+            LOGGER.error(
+                "BU selection failed with no recommendations.",
+                extra={"session_id": session_id, "step_id": step_id},
+            )
             return _session_to_envelope(state)
 
         state.draft["buRecommendations"] = [item.model_dump() for item in recommendations]
@@ -464,6 +524,15 @@ def apply_step_decision(
         )
         state.pending_step = next_step
         state.status = "PENDING_APPROVAL"
+        LOGGER.info(
+            "BU draft completed; waiting for SKU step approval.",
+            extra={
+                "session_id": session_id,
+                "next_step_id": next_step.stepId,
+                "next_subagent": next_step.subagentName,
+                "selected_bu_codes": [item["businessUnitCode"] for item in preview],
+            },
+        )
         return _session_to_envelope(state)
 
     if pending.subagentName == "sku_selector":
@@ -519,11 +588,26 @@ def apply_step_decision(
         state.status = "COMPLETED"
         state.pending_step = None
         state.final_result = final_result
+        LOGGER.info(
+            "Session completed with final recommendations.",
+            extra={
+                "session_id": session_id,
+                "bu_count": len(bu_recommendations),
+                "sku_count": len(sku_rows),
+            },
+        )
         return _session_to_envelope(state)
 
     state.status = "FAILED"
     state.pending_step = None
     state.error = f"Unsupported subagent: {pending.subagentName}."
+    LOGGER.error(
+        "Session failed due to unsupported subagent.",
+        extra={
+            "session_id": session_id,
+            "subagent": pending.subagentName,
+        },
+    )
     return _session_to_envelope(state)
 
 

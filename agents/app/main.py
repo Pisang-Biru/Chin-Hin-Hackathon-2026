@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI, HTTPException, Request
 from starlette.responses import JSONResponse
 
@@ -8,6 +10,10 @@ from .models import SessionEnvelope, StartSessionRequest, StepDecisionRequest
 from .settings import Settings, load_settings
 
 settings: Settings = load_settings()
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
 initialize_deep_agent(settings)
 
 app = FastAPI(title="Deep Agents Service", version="1.0.0")

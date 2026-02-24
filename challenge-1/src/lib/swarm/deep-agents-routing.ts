@@ -28,6 +28,28 @@ export type DeepAgentsRoutingSummary = {
 
 export type DeepAgentsRoutingEvent =
   | {
+      type: 'AGENT_TYPING'
+      leadId: string
+      routingRunId: string
+      businessUnitCode: string
+      agentId: string
+      recipientId: string | null
+      messageType: string
+      timestamp: string
+    }
+  | {
+      type: 'AGENT_MESSAGE'
+      leadId: string
+      routingRunId: string
+      businessUnitCode: string
+      agentId: string
+      recipientId: string | null
+      messageType: string
+      content: string
+      evidenceRefs: Record<string, unknown>
+      timestamp: string
+    }
+  | {
       type: 'DELEGATION_APPROVAL_REQUIRED'
       leadId: string
       routingRunId: string
@@ -123,6 +145,59 @@ async function emitEvent(
     console.warn('[deep-agents.event.emit.failed]', {
       eventType: event.type,
       error: error instanceof Error ? error.message : 'Unknown event emit error',
+    })
+  }
+}
+
+function deriveBusinessUnitCode(agentId: string, recipientId: string | null): string {
+  const source = [agentId, recipientId]
+    .filter(Boolean)
+    .map((value) => String(value).trim().toLowerCase())
+    .find((value) => value.endsWith('_agent'))
+
+  if (!source) {
+    return 'SYSTEM'
+  }
+
+  return source.replace(/_agent$/i, '').toUpperCase()
+}
+
+async function emitSessionAgentMessages(input: {
+  onEvent: RunDeepAgentsRoutingInput['onEvent'] | HandleDelegationDecisionInput['onEvent']
+  leadId: string
+  routingRunId: string
+  messages: DeepAgentsSessionEnvelope['agentMessages']
+}): Promise<void> {
+  const recentMessages = input.messages.slice(-6)
+  for (const message of recentMessages) {
+    const businessUnitCode = deriveBusinessUnitCode(
+      message.agentId,
+      message.recipientId,
+    )
+    const timestamp = new Date().toISOString()
+
+    await emitEvent(input.onEvent, {
+      type: 'AGENT_TYPING',
+      leadId: input.leadId,
+      routingRunId: input.routingRunId,
+      businessUnitCode,
+      agentId: message.agentId,
+      recipientId: message.recipientId,
+      messageType: message.messageType,
+      timestamp,
+    })
+
+    await emitEvent(input.onEvent, {
+      type: 'AGENT_MESSAGE',
+      leadId: input.leadId,
+      routingRunId: input.routingRunId,
+      businessUnitCode,
+      agentId: message.agentId,
+      recipientId: message.recipientId,
+      messageType: message.messageType,
+      content: message.content,
+      evidenceRefs: message.evidenceRefs as Record<string, unknown>,
+      timestamp,
     })
   }
 }
@@ -663,6 +738,25 @@ export async function runDeepAgentsRoutingForLead(
     threadId,
   })
 
+  console.info('[deep-agents.session.start]', {
+    leadId: input.leadId,
+    routingRunId: routingRun.id,
+    sessionId,
+    status: sessionEnvelope.status,
+    pendingStepId: sessionEnvelope.pendingStep?.stepId ?? null,
+    pendingSubagent: sessionEnvelope.pendingStep?.subagentName ?? null,
+    messageCount: sessionEnvelope.agentMessages.length,
+    draftKeys: Object.keys(sessionEnvelope.draft || {}),
+    error: sessionEnvelope.error ?? null,
+  })
+
+  await emitSessionAgentMessages({
+    onEvent: input.onEvent,
+    leadId: input.leadId,
+    routingRunId: routingRun.id,
+    messages: sessionEnvelope.agentMessages,
+  })
+
   const applied = await applySessionEnvelope({
     sessionId,
     leadId: input.leadId,
@@ -672,6 +766,27 @@ export async function runDeepAgentsRoutingForLead(
   })
 
   if (sessionEnvelope.status === 'PENDING_APPROVAL' && sessionEnvelope.pendingStep) {
+    const pendingDetails = JSON.stringify(
+      sessionEnvelope.pendingStep.requestPayload,
+      null,
+      2,
+    )
+    await emitEvent(input.onEvent, {
+      type: 'AGENT_MESSAGE',
+      leadId: input.leadId,
+      routingRunId: routingRun.id,
+      businessUnitCode: 'SYSTEM',
+      agentId: 'synergy_coordinator',
+      recipientId: null,
+      messageType: 'DELEGATION_DEBUG',
+      content: `Pending ${sessionEnvelope.pendingStep.subagentName} (step ${sessionEnvelope.pendingStep.stepIndex}). Payload:\n${pendingDetails}`,
+      evidenceRefs: {
+        sessionId,
+        stepId: sessionEnvelope.pendingStep.stepId,
+      },
+      timestamp: new Date().toISOString(),
+    })
+
     await emitEvent(input.onEvent, {
       type: 'DELEGATION_APPROVAL_REQUIRED',
       leadId: input.leadId,
@@ -690,8 +805,18 @@ export async function runDeepAgentsRoutingForLead(
       sessionId,
       reason:
         sessionEnvelope.error ||
-        `Awaiting approval for ${sessionEnvelope.pendingStep.subagentName}.`,
+        `Awaiting approval for ${sessionEnvelope.pendingStep.subagentName}. Open Synergy > Delegation Approvals to continue.`,
       timestamp: new Date().toISOString(),
+    })
+
+    console.info('[deep-agents.session.pending]', {
+      leadId: input.leadId,
+      routingRunId: routingRun.id,
+      sessionId,
+      stepId: sessionEnvelope.pendingStep.stepId,
+      stepIndex: sessionEnvelope.pendingStep.stepIndex,
+      subagentName: sessionEnvelope.pendingStep.subagentName,
+      requestPayload: sessionEnvelope.pendingStep.requestPayload,
     })
   }
 
@@ -743,6 +868,26 @@ export async function handleDeepAgentDelegationDecision(
     reason: input.reason,
   })
 
+  console.info('[deep-agents.session.decision]', {
+    stepId: step.stepId,
+    sessionId: step.sessionId,
+    routingRunId: step.routingRunId,
+    leadId: step.leadId,
+    decision: input.status,
+    actedBy: input.actedBy,
+    nextStatus: envelope.status,
+    nextPendingStepId: envelope.pendingStep?.stepId ?? null,
+    nextPendingSubagent: envelope.pendingStep?.subagentName ?? null,
+    error: envelope.error ?? null,
+  })
+
+  await emitSessionAgentMessages({
+    onEvent: input.onEvent,
+    leadId: step.leadId,
+    routingRunId: step.routingRunId,
+    messages: envelope.agentMessages,
+  })
+
   const now = new Date()
   await upsertDelegationStepRecord({
     id: step.stepId,
@@ -778,6 +923,23 @@ export async function handleDeepAgentDelegationDecision(
   })
 
   if (envelope.status === 'PENDING_APPROVAL' && envelope.pendingStep) {
+    const pendingDetails = JSON.stringify(envelope.pendingStep.requestPayload, null, 2)
+    await emitEvent(input.onEvent, {
+      type: 'AGENT_MESSAGE',
+      leadId: step.leadId,
+      routingRunId: step.routingRunId,
+      businessUnitCode: 'SYSTEM',
+      agentId: 'synergy_coordinator',
+      recipientId: null,
+      messageType: 'DELEGATION_DEBUG',
+      content: `Next pending ${envelope.pendingStep.subagentName} (step ${envelope.pendingStep.stepIndex}). Payload:\n${pendingDetails}`,
+      evidenceRefs: {
+        sessionId: step.sessionId,
+        stepId: envelope.pendingStep.stepId,
+      },
+      timestamp: new Date().toISOString(),
+    })
+
     await emitEvent(input.onEvent, {
       type: 'DELEGATION_APPROVAL_REQUIRED',
       leadId: step.leadId,
