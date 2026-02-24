@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { prisma } from '@/db'
 import { buildAssignmentConversation } from '@/lib/assignments/agent-conversation'
+import { resolveLeadDisplay } from '@/lib/leads/lead-metadata'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { jsonResponse } from '@/lib/server/json-response'
 
@@ -51,6 +52,23 @@ export const Route = createFileRoute('/api/bu/assignments')({
                 projectName: true,
                 locationText: true,
                 currentStatus: true,
+                sourceDocument: {
+                  select: {
+                    fileName: true,
+                    rawExtraction: true,
+                  },
+                },
+                facts: {
+                  where: {
+                    factKey: {
+                      in: ['region'],
+                    },
+                  },
+                  select: {
+                    factKey: true,
+                    factValue: true,
+                  },
+                },
               },
             },
             routingRecommendation: {
@@ -103,25 +121,39 @@ export const Route = createFileRoute('/api/bu/assignments')({
         return jsonResponse({
           role: principal.role,
           primaryBusinessUnitId: principal.primaryBusinessUnitId,
-          assignments: assignments.map((assignment) => ({
-            id: assignment.id,
-            status: assignment.status,
-            assignedRole: assignment.assignedRole,
-            approvedAt: assignment.approvedAt,
-            dispatchedAt: assignment.dispatchedAt,
-            businessUnit: assignment.businessUnit,
-            lead: assignment.lead,
-            agentConversation: buildAssignmentConversation(
-              assignment.businessUnit.code,
-              assignment.routingRecommendation.routingRun.agentLogs,
-            ),
-            artifacts: assignment.artifacts.map((artifact) => ({
-              id: artifact.id,
-              artifactType: artifact.artifactType,
-              createdAt: artifact.createdAt,
-              downloadUrl: `/api/assignments/${assignment.id}/artifacts/${artifact.artifactType.toLowerCase()}`,
-            })),
-          })),
+          assignments: assignments.map((assignment) => {
+            const leadDisplay = resolveLeadDisplay({
+              projectName: assignment.lead.projectName,
+              locationText: assignment.lead.locationText,
+              sourceDocument: assignment.lead.sourceDocument,
+              facts: assignment.lead.facts,
+            })
+
+            return {
+              id: assignment.id,
+              status: assignment.status,
+              assignedRole: assignment.assignedRole,
+              approvedAt: assignment.approvedAt,
+              dispatchedAt: assignment.dispatchedAt,
+              businessUnit: assignment.businessUnit,
+              lead: {
+                id: assignment.lead.id,
+                currentStatus: assignment.lead.currentStatus,
+                projectName: leadDisplay.projectName,
+                locationText: leadDisplay.locationText,
+              },
+              agentConversation: buildAssignmentConversation(
+                assignment.businessUnit.code,
+                assignment.routingRecommendation.routingRun.agentLogs,
+              ),
+              artifacts: assignment.artifacts.map((artifact) => ({
+                id: artifact.id,
+                artifactType: artifact.artifactType,
+                createdAt: artifact.createdAt,
+                downloadUrl: `/api/assignments/${assignment.id}/artifacts/${artifact.artifactType.toLowerCase()}`,
+              })),
+            }
+          }),
           availableBusinessUnits,
         })
       },

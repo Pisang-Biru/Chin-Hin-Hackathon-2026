@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { prisma } from '@/db'
 import { getAnalyzeResult } from '@/lib/azure/docintel'
+import { extractLeadMetadata } from '@/lib/leads/lead-metadata'
 import {
   ROUTING_CORE_FACT_KEYS,
   normalizeToLeadFacts,
@@ -59,7 +60,11 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
           include: {
             leads: {
               take: 1,
-              select: { id: true },
+              select: {
+                id: true,
+                projectName: true,
+                locationText: true,
+              },
             },
           },
         })
@@ -118,6 +123,11 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
 
         if (analyze.status === 'succeeded') {
           const facts = normalizeToLeadFacts(analyze.raw)
+          const extractedMetadata = extractLeadMetadata({
+            rawExtraction: analyze.raw,
+            fileName: document.fileName,
+            facts,
+          })
           const nextStatus = facts.length > 0 ? 'NORMALIZED' : 'EXTRACTED'
 
           await prisma.$transaction(async (tx) => {
@@ -136,6 +146,10 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
                 where: { id: leadId },
                 data: {
                   currentStatus: nextStatus.toLowerCase(),
+                  projectName:
+                    document.leads[0]?.projectName?.trim() || extractedMetadata.projectName,
+                  locationText:
+                    document.leads[0]?.locationText?.trim() || extractedMetadata.locationText,
                 },
               })
 
