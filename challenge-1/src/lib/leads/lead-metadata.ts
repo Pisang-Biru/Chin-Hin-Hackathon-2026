@@ -50,6 +50,14 @@ const LOCATION_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /\bsarawak\b/i, label: 'Sarawak' },
 ]
 
+const INVALID_PROJECT_NAME_PATTERNS: RegExp[] = [
+  /^\s*(hi|hello|dear|good morning|good afternoon|good evening)\b/i,
+  /^\s*(we|i)\s+(are|have|am)\b/i,
+  /\b(got your contact|previous project|please|kindly|thank you|thanks)\b/i,
+  /\b(call me|contact me|reach me|whatsapp|email me)\b/i,
+  /\b(http:\/\/|https:\/\/|www\.|@)\b/i,
+]
+
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, ' ').trim()
 }
@@ -96,35 +104,76 @@ function sanitizeFileName(fileName: string | null | undefined): string | null {
   return cleaned.length > 0 ? cleaned : null
 }
 
+function isLikelyProjectName(value: string): boolean {
+  const normalized = normalizeWhitespace(value)
+  if (!normalized) {
+    return false
+  }
+
+  if (normalized.length < 6 || normalized.length > 120) {
+    return false
+  }
+
+  if (normalized.split(' ').length > 14) {
+    return false
+  }
+
+  if (/[:?]/.test(normalized)) {
+    return false
+  }
+
+  if (
+    LOCATION_PATTERNS.some((rule) => rule.label.toLowerCase() === normalized.toLowerCase()) ||
+    /\b(central|northern|southern|east coast|east malaysia)\s+region\b/i.test(normalized)
+  ) {
+    return false
+  }
+
+  if (INVALID_PROJECT_NAME_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return false
+  }
+
+  if (
+    /(project stage|construction period|development type|region|value band|information according)/i.test(
+      normalized,
+    )
+  ) {
+    return false
+  }
+
+  return true
+}
+
 function detectProjectName(content: string, fallbackFileName: string | null): string | null {
   const namedPattern = content.match(/project\s*name\s*[:-]\s*([^\n\r.;|]+)/i)
   if (namedPattern?.[1]) {
-    return normalizeWhitespace(namedPattern[1])
+    const candidate = normalizeWhitespace(namedPattern[1])
+    if (isLikelyProjectName(candidate)) {
+      return candidate
+    }
   }
 
   const projectPattern = content.match(
     /project\s*[:-]\s*(?!stage|status|value|period|timeline)([^\n\r.;|]+)/i,
   )
   if (projectPattern?.[1]) {
-    return normalizeWhitespace(projectPattern[1])
+    const candidate = normalizeWhitespace(projectPattern[1])
+    if (isLikelyProjectName(candidate)) {
+      return candidate
+    }
   }
 
-  const firstSentence = normalizeWhitespace(content.split(/[.\n!?]/)[0] ?? '')
-  if (
-    firstSentence &&
-    !/(project stage|construction period|development type|region|value band)/i.test(
-      firstSentence,
-    )
-  ) {
+  const sentenceCandidates = content.split(/[.\n!?]+/).map(normalizeWhitespace).filter(Boolean)
+  for (const sentence of sentenceCandidates) {
     const stripped = normalizeWhitespace(
-      firstSentence.replace(/\bin\s+(kuala lumpur|putrajaya|selangor|perlis|kedah|penang|perak|negeri sembilan|melaka|johor|terengganu|kelantan|pahang|labuan|sabah|sarawak)\b.*/i, ''),
+      sentence.replace(/\bin\s+(kuala lumpur|putrajaya|selangor|perlis|kedah|penang|perak|negeri sembilan|melaka|johor|terengganu|kelantan|pahang|labuan|sabah|sarawak)\b.*/i, ''),
     )
-    if (stripped.length >= 6) {
+    if (isLikelyProjectName(stripped)) {
       return stripped
     }
   }
 
-  return fallbackFileName
+  return fallbackFileName && isLikelyProjectName(fallbackFileName) ? fallbackFileName : null
 }
 
 function detectLocation(content: string, facts: MetadataFactInput[]): string | null {
@@ -167,7 +216,20 @@ export function resolveLeadDisplay(input: LeadDisplayInput): {
   })
 
   return {
-    projectName: currentProjectName || derived.projectName || 'Untitled project',
+    projectName:
+      (isLikelyProjectName(currentProjectName) ? currentProjectName : '') ||
+      derived.projectName ||
+      'Untitled project',
     locationText: currentLocationText || derived.locationText || 'Unknown location',
   }
+}
+
+export function selectPreferredProjectName(currentProjectName: string | null, fallbackProjectName: string | null): string | null {
+  const current = normalizeWhitespace(currentProjectName ?? '')
+  if (isLikelyProjectName(current)) {
+    return current
+  }
+
+  const fallback = normalizeWhitespace(fallbackProjectName ?? '')
+  return isLikelyProjectName(fallback) ? fallback : null
 }

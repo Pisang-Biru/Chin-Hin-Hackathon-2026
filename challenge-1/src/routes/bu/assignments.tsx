@@ -2,7 +2,6 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 
 import { authClient } from '@/lib/auth-client'
-import { getAgentAvatar } from '@/lib/swarm/agent-avatar'
 
 type BusinessUnitOption = {
   id: string
@@ -23,13 +22,16 @@ type AssignmentItem = {
     locationText: string | null
     currentStatus?: string | null
   }
-  agentConversation: Array<{
-    id: string
-    agentId: string
-    recipientId: string | null
-    messageType: string
-    content: string
-    createdAt: string
+  skuProposals: Array<{
+    rank: number
+    confidence: number
+    rationale: string
+    buSku: {
+      id: string
+      skuCode: string
+      skuName: string
+      skuCategory: string | null
+    }
   }>
   artifacts: Array<{
     id: string
@@ -49,10 +51,6 @@ type AssignmentsResponse = {
 export const Route = createFileRoute('/bu/assignments')({
   component: BuAssignmentsPage,
 })
-
-function toAgentLabel(agentId: string): string {
-  return getAgentAvatar(agentId).label
-}
 
 function BuAssignmentsPage() {
   const { data: session, isPending } = authClient.useSession()
@@ -188,7 +186,7 @@ function BuAssignmentsPage() {
                 <th className="pb-2 pr-3">Role</th>
                 <th className="pb-2 pr-3">Status</th>
                 <th className="pb-2 pr-3">Approved</th>
-                <th className="pb-2 pr-3">Agent Conversation</th>
+                <th className="pb-2 pr-3">SKU Proposals</th>
                 <th className="pb-2 pr-3">Artifacts</th>
                 <th className="pb-2">Action</th>
               </tr>
@@ -211,48 +209,21 @@ function BuAssignmentsPage() {
                   <td className="py-2 pr-3">{assignment.status}</td>
                   <td className="py-2 pr-3">{new Date(assignment.approvedAt).toLocaleString()}</td>
                   <td className="py-2 pr-3 max-w-[340px]">
-                    {assignment.agentConversation.length > 0 ? (
-                      <details className="rounded border border-slate-700 bg-slate-900/70 p-2">
-                        <summary className="cursor-pointer text-xs text-cyan-300">
-                          View {assignment.agentConversation.length} messages
-                        </summary>
-                        <div className="mt-2 space-y-2">
-                          {assignment.agentConversation.map((message) => (
-                            <article
-                              key={message.id}
-                              className="rounded border border-slate-700 bg-slate-800 px-2 py-1"
-                            >
-                              <div className="flex items-center gap-2">
-                                <img
-                                  src={getAgentAvatar(message.agentId).imagePath}
-                                  alt={toAgentLabel(message.agentId)}
-                                  className="h-7 w-7 rounded-md border border-slate-600"
-                                />
-                                {message.recipientId ? (
-                                  <>
-                                    <span className="text-slate-400">{'->'}</span>
-                                    <img
-                                      src={getAgentAvatar(message.recipientId).imagePath}
-                                      alt={toAgentLabel(message.recipientId)}
-                                      className="h-7 w-7 rounded-md border border-slate-600"
-                                    />
-                                  </>
-                                ) : null}
-                                <p className="text-[11px] text-cyan-200">
-                                  {toAgentLabel(message.agentId)}
-                                  {message.recipientId ? ` -> ${toAgentLabel(message.recipientId)}` : ''}
-                                </p>
-                              </div>
-                              <p className="text-[11px] text-slate-300">
-                                {new Date(message.createdAt).toLocaleString()} | {message.messageType}
-                              </p>
-                              <p className="text-xs text-slate-100 mt-1">{message.content}</p>
-                            </article>
-                          ))}
-                        </div>
-                      </details>
+                    {assignment.skuProposals.length > 0 ? (
+                      <ul className="space-y-1">
+                        {assignment.skuProposals.map((sku) => (
+                          <li key={`${assignment.id}-${sku.buSku.id}`} className="text-xs">
+                            <span className="text-slate-400">{sku.rank}.</span> {sku.buSku.skuCode} -{' '}
+                            {sku.buSku.skuName}
+                            <span className="text-slate-500">
+                              {' '}
+                              ({sku.confidence.toFixed(4)})
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     ) : (
-                      <span className="text-xs text-slate-400">No conversation logs</span>
+                      <span className="text-xs text-slate-400">No SKU proposals</span>
                     )}
                   </td>
                   <td className="py-2 pr-3">

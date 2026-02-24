@@ -2,7 +2,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { prisma } from '@/db'
 import { getAnalyzeResult } from '@/lib/azure/docintel'
-import { extractLeadMetadata } from '@/lib/leads/lead-metadata'
+import { extractLeadMetadata, selectPreferredProjectName } from '@/lib/leads/lead-metadata'
+import { generateLeadProjectTitleWithLlm } from '@/lib/leads/lead-title-llm'
 import {
   ROUTING_CORE_FACT_KEYS,
   normalizeToLeadFacts,
@@ -128,6 +129,17 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
             fileName: document.fileName,
             facts,
           })
+          const llmProjectTitle = await generateLeadProjectTitleWithLlm({
+            rawExtraction: analyze.raw,
+            fileName: document.fileName,
+            locationText: extractedMetadata.locationText,
+            fallbackTitle: extractedMetadata.projectName,
+            facts,
+          })
+          const generatedProjectTitle = selectPreferredProjectName(
+            llmProjectTitle,
+            extractedMetadata.projectName,
+          )
           const nextStatus = facts.length > 0 ? 'NORMALIZED' : 'EXTRACTED'
 
           await prisma.$transaction(async (tx) => {
@@ -146,8 +158,10 @@ export const Route = createFileRoute('/api/leads/documents/$documentId/status')(
                 where: { id: leadId },
                 data: {
                   currentStatus: nextStatus.toLowerCase(),
-                  projectName:
-                    document.leads[0]?.projectName?.trim() || extractedMetadata.projectName,
+                  projectName: selectPreferredProjectName(
+                    document.leads[0]?.projectName ?? null,
+                    generatedProjectTitle,
+                  ),
                   locationText:
                     document.leads[0]?.locationText?.trim() || extractedMetadata.locationText,
                 },

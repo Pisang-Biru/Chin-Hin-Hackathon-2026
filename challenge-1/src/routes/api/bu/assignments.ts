@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { prisma } from '@/db'
-import { buildAssignmentConversation } from '@/lib/assignments/agent-conversation'
 import { resolveLeadDisplay } from '@/lib/leads/lead-metadata'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { jsonResponse } from '@/lib/server/json-response'
@@ -73,18 +72,18 @@ export const Route = createFileRoute('/api/bu/assignments')({
             },
             routingRecommendation: {
               select: {
-                routingRun: {
+                recommendationSkus: {
+                  orderBy: { rank: 'asc' },
                   select: {
-                    agentLogs: {
-                      orderBy: { createdAt: 'asc' },
+                    rank: true,
+                    confidence: true,
+                    rationale: true,
+                    buSku: {
                       select: {
                         id: true,
-                        agentId: true,
-                        recipientId: true,
-                        messageType: true,
-                        content: true,
-                        evidenceRefs: true,
-                        createdAt: true,
+                        skuCode: true,
+                        skuName: true,
+                        skuCategory: true,
                       },
                     },
                   },
@@ -142,10 +141,12 @@ export const Route = createFileRoute('/api/bu/assignments')({
                 projectName: leadDisplay.projectName,
                 locationText: leadDisplay.locationText,
               },
-              agentConversation: buildAssignmentConversation(
-                assignment.businessUnit.code,
-                assignment.routingRecommendation.routingRun.agentLogs,
-              ),
+              skuProposals: assignment.routingRecommendation.recommendationSkus.map((item) => ({
+                rank: item.rank,
+                confidence: Number(item.confidence.toString()),
+                rationale: item.rationale,
+                buSku: item.buSku,
+              })),
               artifacts: assignment.artifacts.map((artifact) => ({
                 id: artifact.id,
                 artifactType: artifact.artifactType,
