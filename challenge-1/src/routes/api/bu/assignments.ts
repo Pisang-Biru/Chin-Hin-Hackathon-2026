@@ -5,6 +5,25 @@ import { resolveLeadDisplay } from '@/lib/leads/lead-metadata'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { jsonResponse } from '@/lib/server/json-response'
 
+type AssignmentDecisionMetadata = {
+  buDecision?: {
+    status?: 'DISPATCHED' | 'BU_REJECTED'
+    reason?: string | null
+    actedBy?: string
+    actedAt?: string
+  }
+}
+
+function readBuDecisionReason(requiredActions: unknown): string | null {
+  if (!requiredActions || typeof requiredActions !== 'object') {
+    return null
+  }
+
+  const metadata = requiredActions as AssignmentDecisionMetadata
+  const reason = metadata.buDecision?.reason
+  return typeof reason === 'string' && reason.trim().length > 0 ? reason.trim() : null
+}
+
 export const Route = createFileRoute('/api/bu/assignments')({
   server: {
     handlers: {
@@ -39,7 +58,12 @@ export const Route = createFileRoute('/api/bu/assignments')({
             : requestedBusinessUnitId
 
         const assignments = await prisma.assignment.findMany({
-          where: businessUnitId ? { businessUnitId } : undefined,
+          where: {
+            ...(businessUnitId ? { businessUnitId } : {}),
+            status: {
+              in: ['APPROVED', 'DISPATCHED', 'BU_REJECTED'],
+            },
+          },
           orderBy: { approvedAt: 'desc' },
           include: {
             businessUnit: {
@@ -134,6 +158,7 @@ export const Route = createFileRoute('/api/bu/assignments')({
               assignedRole: assignment.assignedRole,
               approvedAt: assignment.approvedAt,
               dispatchedAt: assignment.dispatchedAt,
+              buDecisionReason: readBuDecisionReason(assignment.requiredActions),
               businessUnit: assignment.businessUnit,
               lead: {
                 id: assignment.lead.id,

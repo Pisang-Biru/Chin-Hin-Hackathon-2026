@@ -11,10 +11,11 @@ type BusinessUnitOption = {
 
 type AssignmentItem = {
   id: string
-  status: 'APPROVED' | 'DISPATCHED' | 'CANCELED'
+  status: 'APPROVED' | 'DISPATCHED' | 'BU_REJECTED'
   assignedRole: 'PRIMARY' | 'CROSS_SELL'
   approvedAt: string
   dispatchedAt: string | null
+  buDecisionReason: string | null
   businessUnit: BusinessUnitOption
   lead: {
     id: string
@@ -95,7 +96,8 @@ function BuAssignmentsPage() {
 
   async function updateStatus(
     assignmentId: string,
-    status: 'DISPATCHED' | 'CANCELED',
+    status: 'DISPATCHED' | 'BU_REJECTED',
+    reason?: string,
   ) {
     setUpdatingAssignmentId(assignmentId)
     setError(null)
@@ -104,7 +106,7 @@ function BuAssignmentsPage() {
       const apiResponse = await fetch(`/api/bu/assignments/${assignmentId}/status`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, reason }),
       })
       const payload = (await apiResponse.json()) as { error?: string }
       if (!apiResponse.ok) {
@@ -151,7 +153,7 @@ function BuAssignmentsPage() {
         <section className="rounded-2xl border border-slate-700 bg-slate-800/70 p-6 shadow-xl">
           <h1 className="text-2xl font-semibold mb-2">BU Assignments</h1>
           <p className="text-slate-300 text-sm">
-            View assigned opportunities and update dispatch status for your BU workflow.
+            View Synergy-approved opportunities and decide to accept or reject with reason.
           </p>
           {canFilterByBu ? (
             <div className="mt-4">
@@ -186,6 +188,7 @@ function BuAssignmentsPage() {
                 <th className="pb-2 pr-3">Role</th>
                 <th className="pb-2 pr-3">Status</th>
                 <th className="pb-2 pr-3">Approved</th>
+                <th className="pb-2 pr-3">BU Decision</th>
                 <th className="pb-2 pr-3">SKU Proposals</th>
                 <th className="pb-2 pr-3">Artifacts</th>
                 <th className="pb-2">Action</th>
@@ -208,6 +211,13 @@ function BuAssignmentsPage() {
                   <td className="py-2 pr-3">{assignment.assignedRole}</td>
                   <td className="py-2 pr-3">{assignment.status}</td>
                   <td className="py-2 pr-3">{new Date(assignment.approvedAt).toLocaleString()}</td>
+                  <td className="py-2 pr-3 text-xs text-slate-300 max-w-[240px]">
+                    {assignment.status === 'BU_REJECTED'
+                      ? assignment.buDecisionReason || 'No reason provided'
+                      : assignment.status === 'DISPATCHED'
+                        ? 'Accepted by BU'
+                        : '-'}
+                  </td>
                   <td className="py-2 pr-3 max-w-[340px]">
                     {assignment.skuProposals.length > 0 ? (
                       <ul className="space-y-1">
@@ -244,30 +254,42 @@ function BuAssignmentsPage() {
                     )}
                   </td>
                   <td className="py-2">
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void updateStatus(assignment.id, 'DISPATCHED')}
-                        disabled={updatingAssignmentId === assignment.id}
-                        className="rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 px-3 py-1"
-                      >
-                        Dispatch
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void updateStatus(assignment.id, 'CANCELED')}
-                        disabled={updatingAssignmentId === assignment.id}
-                        className="rounded bg-rose-700 hover:bg-rose-600 disabled:opacity-60 px-3 py-1"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                    {assignment.status === 'APPROVED' ? (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void updateStatus(assignment.id, 'DISPATCHED')}
+                          disabled={updatingAssignmentId === assignment.id}
+                          className="rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 px-3 py-1"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const reason = window.prompt(
+                              'Reason for rejecting this assignment (minimum 5 characters)',
+                            )
+                            if (!reason) {
+                              return
+                            }
+                            void updateStatus(assignment.id, 'BU_REJECTED', reason)
+                          }}
+                          disabled={updatingAssignmentId === assignment.id}
+                          className="rounded bg-rose-700 hover:bg-rose-600 disabled:opacity-60 px-3 py-1"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400">No action</span>
+                    )}
                   </td>
                 </tr>
               ))}
               {assignments.length === 0 ? (
                 <tr>
-                  <td className="py-4 text-slate-400" colSpan={9}>
+                  <td className="py-4 text-slate-400" colSpan={10}>
                     No assignments found.
                   </td>
                 </tr>

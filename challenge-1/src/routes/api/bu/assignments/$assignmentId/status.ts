@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { prisma } from '@/db'
 import { updateAssignmentWithDispatchWorkflow } from '@/lib/assignments/dispatch-workflow'
-import { validateAssignmentStatusPayload } from '@/lib/bu/assignment-status-validation'
+import { validateBuDecisionPayload } from '@/lib/bu/assignment-status-validation'
 import { canAccessBusinessUnit, requireRoles } from '@/lib/server/auth-guard'
 import { jsonResponse, sanitizeErrorMessage } from '@/lib/server/json-response'
 
@@ -17,7 +17,7 @@ export const Route = createFileRoute('/api/bu/assignments/$assignmentId/status')
         const principal = authz.principal!
 
         const payload = await request.json().catch(() => null)
-        const validated = validateAssignmentStatusPayload(payload)
+        const validated = validateBuDecisionPayload(payload)
         if (!validated.status) {
           return jsonResponse({ error: validated.error || 'Invalid payload.' }, 400)
         }
@@ -39,11 +39,22 @@ export const Route = createFileRoute('/api/bu/assignments/$assignmentId/status')
           return jsonResponse({ error: 'Forbidden' }, 403)
         }
 
+        if (assignment.status !== 'APPROVED') {
+          return jsonResponse(
+            {
+              error:
+                'BU can only accept or reject assignments after Synergy approval (status APPROVED).',
+            },
+            409,
+          )
+        }
+
         try {
           const result = await updateAssignmentWithDispatchWorkflow({
             assignmentId: assignment.id,
             status: validated.status,
             actedBy: principal.userId,
+            reason: validated.reason,
           })
 
           console.info('[bu.assignments.update-status]', {
@@ -51,7 +62,9 @@ export const Route = createFileRoute('/api/bu/assignments/$assignmentId/status')
             role: principal.role,
             assignmentId: assignment.id,
             businessUnitId: assignment.businessUnitId,
+            previousStatus: assignment.status,
             status: validated.status,
+            reason: validated.reason || null,
           })
 
           return jsonResponse({

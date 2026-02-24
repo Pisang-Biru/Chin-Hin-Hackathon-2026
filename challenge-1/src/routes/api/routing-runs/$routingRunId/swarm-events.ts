@@ -286,7 +286,7 @@ export const Route = createFileRoute('/api/routing-runs/$routingRunId/swarm-even
                 where: {
                   leadId,
                   status: {
-                    in: ['APPROVED', 'DISPATCHED'],
+                    in: ['PENDING_SYNERGY', 'APPROVED', 'DISPATCHED'],
                   },
                 },
               })

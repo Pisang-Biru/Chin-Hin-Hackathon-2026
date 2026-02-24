@@ -397,7 +397,7 @@ export async function runDeterministicRoutingForLead(
             leadId,
             businessUnitId: recommendation.businessUnitId,
             status: {
-              in: ['APPROVED', 'DISPATCHED'],
+              in: ['PENDING_SYNERGY', 'APPROVED', 'DISPATCHED'],
             },
           },
           select: { id: true },
@@ -410,7 +410,8 @@ export async function runDeterministicRoutingForLead(
               businessUnitId: recommendation.businessUnitId,
               routingRecommendationId: createdRecommendation.id,
               assignedRole: recommendation.role,
-              approvedBy: triggeredBy,
+              status: 'PENDING_SYNERGY',
+              approvedBy: 'system:pending',
             },
           })
           assignmentCount += 1

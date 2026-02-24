@@ -6,17 +6,52 @@ import { resolveLeadDisplay } from '@/lib/leads/lead-metadata'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { jsonResponse } from '@/lib/server/json-response'
 
-type AssignmentFilterStatus = 'APPROVED' | 'DISPATCHED' | 'CANCELED' | 'ALL'
+type AssignmentFilterStatus =
+  | 'PENDING_SYNERGY'
+  | 'APPROVED'
+  | 'DISPATCHED'
+  | 'BU_REJECTED'
+  | 'CANCELED'
+  | 'ALL'
+
+type AssignmentDecisionMetadata = {
+  synergyDecision?: {
+    reason?: string | null
+  }
+  buDecision?: {
+    reason?: string | null
+  }
+}
+
+function readDecisionReason(
+  requiredActions: unknown,
+  key: 'synergyDecision' | 'buDecision',
+): string | null {
+  if (!requiredActions || typeof requiredActions !== 'object') {
+    return null
+  }
+
+  const metadata = requiredActions as AssignmentDecisionMetadata
+  const decision = metadata[key]
+  if (!decision || typeof decision !== 'object') {
+    return null
+  }
+
+  const reason = decision.reason
+  return typeof reason === 'string' && reason.trim().length > 0 ? reason.trim() : null
+}
 
 function parseStatus(value: string | null): AssignmentFilterStatus | null {
   if (!value) {
-    return 'APPROVED'
+    return 'PENDING_SYNERGY'
   }
 
   const normalized = value.toUpperCase()
   if (
+    normalized === 'PENDING_SYNERGY' ||
     normalized === 'APPROVED' ||
     normalized === 'DISPATCHED' ||
+    normalized === 'BU_REJECTED' ||
     normalized === 'CANCELED' ||
     normalized === 'ALL'
   ) {
@@ -151,6 +186,11 @@ export const Route = createFileRoute('/api/synergy/approvals')({
               approvedBy: assignment.approvedBy,
               approvedAt: assignment.approvedAt,
               dispatchedAt: assignment.dispatchedAt,
+              synergyDecisionReason: readDecisionReason(
+                assignment.requiredActions,
+                'synergyDecision',
+              ),
+              buDecisionReason: readDecisionReason(assignment.requiredActions, 'buDecision'),
               businessUnit: assignment.businessUnit,
               lead: {
                 id: assignment.lead.id,

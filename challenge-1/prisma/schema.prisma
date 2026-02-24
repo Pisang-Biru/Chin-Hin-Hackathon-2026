@@ -57,8 +57,10 @@ enum RecommendationRole {
 }
 
 enum AssignmentStatus {
+  PENDING_SYNERGY
   APPROVED
   DISPATCHED
+  BU_REJECTED
   CANCELED
 }
 

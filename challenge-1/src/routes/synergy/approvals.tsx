@@ -4,15 +4,23 @@ import { useEffect, useMemo, useState } from 'react'
 import { authClient } from '@/lib/auth-client'
 import { getAgentAvatar } from '@/lib/swarm/agent-avatar'
 
-type ApprovalStatus = 'APPROVED' | 'DISPATCHED' | 'CANCELED' | 'ALL'
+type ApprovalStatus =
+  | 'PENDING_SYNERGY'
+  | 'APPROVED'
+  | 'DISPATCHED'
+  | 'BU_REJECTED'
+  | 'CANCELED'
+  | 'ALL'
 
 type ApprovalItem = {
   id: string
-  status: 'APPROVED' | 'DISPATCHED' | 'CANCELED'
+  status: 'PENDING_SYNERGY' | 'APPROVED' | 'DISPATCHED' | 'BU_REJECTED' | 'CANCELED'
   assignedRole: 'PRIMARY' | 'CROSS_SELL'
   approvedBy: string
   approvedAt: string
   dispatchedAt: string | null
+  synergyDecisionReason: string | null
+  buDecisionReason: string | null
   businessUnit: {
     id: string
     code: string
@@ -75,7 +83,7 @@ function SynergyApprovalsPage() {
   const { data: session, isPending } = authClient.useSession()
   const role = (session?.user as { role?: string } | undefined)?.role
 
-  const [statusFilter, setStatusFilter] = useState<ApprovalStatus>('APPROVED')
+  const [statusFilter, setStatusFilter] = useState<ApprovalStatus>('PENDING_SYNERGY')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [response, setResponse] = useState<ApprovalsResponse | null>(null)
@@ -113,7 +121,8 @@ function SynergyApprovalsPage() {
 
   async function updateStatus(
     assignmentId: string,
-    nextStatus: 'DISPATCHED' | 'CANCELED',
+    nextStatus: 'APPROVED' | 'CANCELED',
+    reason?: string,
   ) {
     setUpdatingAssignmentId(assignmentId)
     setError(null)
@@ -122,7 +131,7 @@ function SynergyApprovalsPage() {
       const apiResponse = await fetch(`/api/synergy/approvals/${assignmentId}/status`, {
         method: 'PATCH',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ status: nextStatus }),
+        body: JSON.stringify({ status: nextStatus, reason }),
       })
 
       const payload = (await apiResponse.json()) as { error?: string; details?: string }
@@ -174,9 +183,9 @@ function SynergyApprovalsPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         <section className="rounded-2xl border border-slate-700 bg-slate-800/70 p-6 shadow-xl space-y-4">
           <div>
-            <h1 className="text-2xl font-semibold mb-2">Synergy Approval & Dispatch</h1>
+            <h1 className="text-2xl font-semibold mb-2">Synergy Approval Gate</h1>
             <p className="text-slate-300 text-sm">
-              Review BU recommendations, approve dispatch, and generate assignment artifacts.
+              Review routing recommendations, then approve or reject before BU action.
             </p>
           </div>
 
@@ -190,8 +199,10 @@ function SynergyApprovalsPage() {
               onChange={(event) => setStatusFilter(event.target.value as ApprovalStatus)}
               className="rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm"
             >
+              <option value="PENDING_SYNERGY">PENDING_SYNERGY</option>
               <option value="APPROVED">APPROVED</option>
               <option value="DISPATCHED">DISPATCHED</option>
+              <option value="BU_REJECTED">BU_REJECTED</option>
               <option value="CANCELED">CANCELED</option>
               <option value="ALL">ALL</option>
             </select>
@@ -210,6 +221,7 @@ function SynergyApprovalsPage() {
                 <th className="pb-2 pr-3">Recommendation</th>
                 <th className="pb-2 pr-3">SKU Proposals</th>
                 <th className="pb-2 pr-3">Agent Conversation</th>
+                <th className="pb-2 pr-3">Decision Reason</th>
                 <th className="pb-2 pr-3">Artifacts</th>
                 <th className="pb-2">Action</th>
               </tr>
@@ -301,6 +313,13 @@ function SynergyApprovalsPage() {
                       <span className="text-xs text-slate-400">No conversation logs</span>
                     )}
                   </td>
+                  <td className="py-2 pr-3 text-xs text-slate-300 max-w-[220px]">
+                    {assignment.status === 'CANCELED'
+                      ? assignment.synergyDecisionReason || 'No reason'
+                      : assignment.status === 'BU_REJECTED'
+                        ? assignment.buDecisionReason || 'No reason'
+                        : '-'}
+                  </td>
                   <td className="py-2 pr-3">
                     {assignment.artifacts.length > 0 ? (
                       <div className="flex flex-col gap-1">
@@ -319,23 +338,26 @@ function SynergyApprovalsPage() {
                     )}
                   </td>
                   <td className="py-2">
-                    {assignment.status === 'APPROVED' ? (
+                    {assignment.status === 'PENDING_SYNERGY' ? (
                       <div className="flex gap-2">
                         <button
                           type="button"
-                          onClick={() => void updateStatus(assignment.id, 'DISPATCHED')}
+                          onClick={() => void updateStatus(assignment.id, 'APPROVED')}
                           disabled={updatingAssignmentId === assignment.id}
                           className="rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 px-3 py-1"
                         >
-                          Dispatch
+                          Approve
                         </button>
                         <button
                           type="button"
-                          onClick={() => void updateStatus(assignment.id, 'CANCELED')}
+                          onClick={() => {
+                            const reason = window.prompt('Reason for rejecting this assignment (optional)')
+                            void updateStatus(assignment.id, 'CANCELED', reason || undefined)
+                          }}
                           disabled={updatingAssignmentId === assignment.id}
                           className="rounded bg-rose-700 hover:bg-rose-600 disabled:opacity-60 px-3 py-1"
                         >
-                          Cancel
+                          Reject
                         </button>
                       </div>
                     ) : (
@@ -346,7 +368,7 @@ function SynergyApprovalsPage() {
               ))}
               {assignments.length === 0 ? (
                 <tr>
-                  <td className="py-4 text-slate-400" colSpan={8}>
+                  <td className="py-4 text-slate-400" colSpan={9}>
                     No assignments found for the selected filter.
                   </td>
                 </tr>

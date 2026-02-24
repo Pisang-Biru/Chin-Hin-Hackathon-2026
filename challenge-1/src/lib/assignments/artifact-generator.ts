@@ -7,7 +7,7 @@ import { prisma } from '@/db'
 
 type AssignmentForArtifact = {
   id: string
-  status: 'APPROVED' | 'DISPATCHED' | 'CANCELED'
+  status: 'PENDING_SYNERGY' | 'APPROVED' | 'DISPATCHED' | 'BU_REJECTED' | 'CANCELED'
   assignedRole: 'PRIMARY' | 'CROSS_SELL'
   approvedBy: string
   approvedAt: Date

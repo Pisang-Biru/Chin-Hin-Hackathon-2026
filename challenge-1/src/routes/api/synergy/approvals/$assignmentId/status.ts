@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { prisma } from '@/db'
 import { updateAssignmentWithDispatchWorkflow } from '@/lib/assignments/dispatch-workflow'
-import { validateAssignmentStatusPayload } from '@/lib/bu/assignment-status-validation'
+import { validateSynergyDecisionPayload } from '@/lib/bu/assignment-status-validation'
 import { requireRoles } from '@/lib/server/auth-guard'
 import { jsonResponse, sanitizeErrorMessage } from '@/lib/server/json-response'
 
@@ -17,7 +17,7 @@ export const Route = createFileRoute('/api/synergy/approvals/$assignmentId/statu
         const principal = authz.principal!
 
         const payload = await request.json().catch(() => null)
-        const validated = validateAssignmentStatusPayload(payload)
+        const validated = validateSynergyDecisionPayload(payload)
         if (!validated.status) {
           return jsonResponse({ error: validated.error || 'Invalid payload.' }, 400)
         }
@@ -27,6 +27,7 @@ export const Route = createFileRoute('/api/synergy/approvals/$assignmentId/statu
           select: {
             id: true,
             businessUnitId: true,
+            status: true,
           },
         })
 
@@ -34,11 +35,22 @@ export const Route = createFileRoute('/api/synergy/approvals/$assignmentId/statu
           return jsonResponse({ error: 'Assignment not found.' }, 404)
         }
 
+        if (assignment.status !== 'PENDING_SYNERGY') {
+          return jsonResponse(
+            {
+              error:
+                'Only assignments pending Synergy approval can be actioned from this endpoint.',
+            },
+            409,
+          )
+        }
+
         try {
           const result = await updateAssignmentWithDispatchWorkflow({
             assignmentId: assignment.id,
             status: validated.status,
             actedBy: principal.userId,
+            reason: validated.reason,
           })
 
           console.info('[synergy.approvals.update-status]', {
@@ -46,7 +58,9 @@ export const Route = createFileRoute('/api/synergy/approvals/$assignmentId/statu
             role: principal.role,
             assignmentId: assignment.id,
             businessUnitId: assignment.businessUnitId,
+            previousStatus: assignment.status,
             status: validated.status,
+            reason: validated.reason || null,
             generatedArtifactCount: result.generatedArtifacts.length,
           })
 

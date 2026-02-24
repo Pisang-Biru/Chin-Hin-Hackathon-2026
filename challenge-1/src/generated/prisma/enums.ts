@@ -80,8 +80,10 @@ export type RecommendationRole = (typeof RecommendationRole)[keyof typeof Recomm
 
 
 export const AssignmentStatus = {
+  PENDING_SYNERGY: 'PENDING_SYNERGY',
   APPROVED: 'APPROVED',
   DISPATCHED: 'DISPATCHED',
+  BU_REJECTED: 'BU_REJECTED',
   CANCELED: 'CANCELED'
 } as const
 
